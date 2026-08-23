@@ -2,835 +2,595 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2027 유럽 풀드라이브 · 뮌헨 인아웃 · 돌로미티 + 동유럽 + 알프스</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>2027 유럽 로드트립 플래너</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root{
-  --primary:#1a5f7a;--primary-light:#57c5b6;--primary-dark:#159895;
-  --accent:#f39c12;--accent-light:#f7dc6f;
-  --dark:#1a1a2e;--dark-light:#16213e;--dark-muted:#0f3460;
-  --cream:#fef9e7;--cream-light:#fdf2e9;
-  --text:#2c3e50;--text-light:#7f8c8d;--text-muted:#95a5a6;
-  --white:#ffffff;--gray-50:#f8f9fa;--gray-100:#ecf0f1;--gray-200:#dce1e3;
-  --success:#27ae60;--danger:#e74c3c;--info:#3498db;
-  --shadow-sm:0 2px 8px rgba(0,0,0,.08);--shadow-md:0 8px 30px rgba(0,0,0,.12);--shadow-lg:0 20px 60px rgba(0,0,0,.15);
-  --radius:16px;--radius-sm:12px;--radius-lg:24px;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1a5f7a;--accent:#f39c12;--dark:#1a1a2e;--bg:#0f0f1a;--card:#1e1e32;--card-border:#2a2a40;--text:#e0e0e0;--text-muted:#8888aa;--success:#2ecc71;--danger:#e74c3c;--nav-height:64px;--safe-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Noto Sans KR','Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent;overflow-x:hidden;padding-bottom:calc(var(--nav-height) + var(--safe-bottom))}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:2px}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-height) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(15,15,26,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;justify-content:space-around;align-items:center;z-index:1000}
+.bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:500;color:var(--text-muted);transition:color 0.3s;min-width:44px;min-height:44px;justify-content:center}
+.bottom-nav a.active{color:var(--accent)}
+.bottom-nav a i{font-size:20px}
+.bottom-nav a span{line-height:1}
+
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 20px 40px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 70%,rgba(243,156,18,0.08) 0%,transparent 50%),radial-gradient(circle at 70% 30%,rgba(26,95,122,0.12) 0%,transparent 50%);animation:heroPulse 8s ease-in-out infinite alternate}
+@keyframes heroPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--accent);font-weight:600;width:fit-content;margin-bottom:16px}
+.hero-title{font-size:clamp(28px,7vw,48px);font-weight:900;line-height:1.15;margin-bottom:8px;background:linear-gradient(135deg,#ffffff 0%,#e0e0e0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-size:15px;color:var(--text-muted);margin-bottom:28px;font-weight:400}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.hero-stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center}
+.hero-stat-value{font-size:24px;font-weight:800;color:var(--accent);font-family:'Inter',sans-serif}
+.hero-stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
+.hero-route{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hero-route-tag{background:rgba(26,95,122,0.2);border:1px solid rgba(26,95,122,0.3);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--primary);font-weight:600}
+.hero-route-arrow{color:var(--accent);font-size:12px}
+
+.section-header{padding:0 20px;margin-bottom:20px}
+.section-header h2{font-size:22px;font-weight:800;color:#fff}
+.section-header p{font-size:13px;color:var(--text-muted);margin-top:4px}
+
+#phases{padding:40px 0}
+.phases-scroll{display:flex;gap:14px;padding:0 20px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.phases-scroll::-webkit-scrollbar{display:none}
+.phase-card{min-width:280px;max-width:300px;scroll-snap-align:start;background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:20px;flex-shrink:0;transition:transform 0.3s}
+.phase-card:active{transform:scale(0.97)}
+.phase-card-number{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:13px;font-weight:800;font-family:'Inter',sans-serif;margin-bottom:10px}
+.phase-card-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.phase-card-dates{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px}
+.phase-card-route{font-size:13px;color:var(--text-muted);margin-bottom:12px}
+.phase-card-tags{display:flex;flex-wrap:wrap;gap:6px}
+.phase-tag{background:rgba(26,95,122,0.15);border:1px solid rgba(26,95,122,0.25);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--primary);font-weight:500}
+
+#stats{padding:40px 20px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;text-align:center}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px}
+.stat-value{font-size:20px;font-weight:800;color:#fff;font-family:'Inter',sans-serif}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+#timeline{padding:40px 0 40px 20px}
+.timeline-line{position:relative;padding-left:28px;border-left:2px solid var(--primary)}
+.timeline-item{position:relative;margin-bottom:28px;opacity:0;transform:translateX(-10px);transition:all 0.5s ease}
+.timeline-item.visible{opacity:1;transform:translateX(0)}
+.timeline-item::before{content:'';position:absolute;left:-35px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.timeline-date{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px}
+.timeline-title{font-size:15px;font-weight:700;color:#fff}
+.timeline-desc{font-size:13px;color:var(--text-muted);margin-top:4px}
+
+#map-section{padding:40px 0}
+.map-container{display:flex;flex-direction:column;gap:0}
+.map-wrapper{height:300px;border-radius:0;overflow:hidden;border:1px solid var(--card-border)}
+.day-sidebar{background:var(--card);max-height:250px;overflow-y:auto;padding:0}
+.day-card{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--card-border);cursor:pointer;transition:background 0.2s}
+.day-card:active,.day-card.active{background:rgba(243,156,18,0.1)}
+.day-card-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:'Inter',sans-serif;flex-shrink:0}
+.day-card-info{flex:1;min-width:0}
+.day-card-date{font-size:11px;color:var(--accent);font-weight:600}
+.day-card-route{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-card-km{font-size:11px;color:var(--text-muted)}
+
+#schedule{padding:40px 0}
+.schedule-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 20px}
+.schedule-table{width:100%;min-width:600px;border-collapse:collapse;font-size:13px}
+.schedule-table thead{position:sticky;top:0;z-index:2}
+.schedule-table th{background:var(--primary);color:#fff;padding:10px 8px;text-align:left;font-weight:600;font-size:12px;white-space:nowrap}
+.schedule-table th:first-child{border-radius:8px 0 0 0}
+.schedule-table th:last-child{border-radius:0 8px 0 0}
+.schedule-table td{padding:10px 8px;border-bottom:1px solid var(--card-border);white-space:nowrap;color:var(--text)}
+.schedule-table tr:hover td{background:rgba(26,95,122,0.1)}
+.schedule-table .phase-row{background:rgba(243,156,18,0.08);font-weight:700;color:var(--accent)}
+.schedule-table .phase-row td{padding:8px}
+
+#tips{padding:40px 20px}
+.tips-grid{display:flex;flex-direction:column;gap:12px}
+.tip-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:18px}
+.tip-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.tip-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
+.tip-content{font-size:13px;color:var(--text-muted);line-height:1.7}
+
+footer{padding:40px 20px calc(30px + var(--safe-bottom));text-align:center;border-top:1px solid var(--card-border)}
+footer p{font-size:12px;color:var(--text-muted)}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(min-width:768px){
+  body{max-width:480px;margin:0 auto}
+  .bottom-nav{max-width:480px;left:50%;transform:translateX(-50%)}
+  .map-wrapper{height:400px}
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter','Noto Sans KR',sans-serif;background:var(--gray-50);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
-
-/* Hero */
-.hero{position:relative;min-height:100vh;display:flex;align-items:center;background:linear-gradient(135deg,var(--dark) 0%,var(--dark-light) 50%,var(--dark-muted) 100%);overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1920&q=80') center/cover;opacity:.25}
-.hero::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:120px;background:linear-gradient(to top,var(--gray-50),transparent)}
-.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:80px 40px 120px}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);padding:8px 20px;border-radius:100px;color:var(--accent-light);font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
-.hero-badge i{font-size:1rem}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:16px;max-width:800px}
-.hero h1 span{display:block;font-size:.45em;font-weight:400;font-family:'Inter',sans-serif;color:rgba(255,255,255,.7);margin-top:12px;line-height:1.6}
-.hero-subtitle{font-size:1.15rem;color:rgba(255,255,255,.6);max-width:600px;margin-bottom:40px;font-weight:300}
-.hero-stats{display:flex;gap:40px;flex-wrap:wrap}
-.hero-stat{text-align:center}
-.hero-stat-num{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--accent-light);line-height:1}
-.hero-stat-label{font-size:.75rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
-
-/* Floating Elements */
-.float-shapes{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.float-shape{position:absolute;border-radius:50%;background:rgba(255,255,255,.03);animation:float 20s ease-in-out infinite}
-.float-shape:nth-child(1){width:400px;height:400px;top:-100px;right:-100px;animation-delay:0s}
-.float-shape:nth-child(2){width:300px;height:300px;bottom:-50px;left:-50px;animation-delay:5s}
-.float-shape:nth-child(3){width:200px;height:200px;top:40%;left:10%;animation-delay:10s}
-@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-30px) scale(1.1)}}
-
-/* Container */
-.container{max-width:1200px;margin:0 auto;padding:0 24px}
-
-/* Section Header */
-.section{padding:80px 0}
-.section-header{text-align:center;margin-bottom:60px}
-.section-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--white);font-size:1.5rem;margin-bottom:20px;box-shadow:0 10px 30px rgba(26,95,122,.3)}
-.section-title{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--dark);margin-bottom:12px}
-.section-subtitle{color:var(--text-light);font-size:1.05rem;max-width:600px;margin:0 auto}
-
-/* Phases Grid */
-.phases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
-.phase-card{background:var(--white);border-radius:var(--radius);padding:32px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);transition:all .4s cubic-bezier(.175,.885,.32,1.275);border:1px solid var(--gray-100)}
-.phase-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg)}
-.phase-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--primary-light))}
-.phase-num{font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.phase-num::before{content:"";width:24px;height:2px;background:var(--primary)}
-.phase-flag{font-size:2rem;margin-bottom:12px}
-.phase-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--dark);margin-bottom:8px}
-.phase-days{font-size:.85rem;color:var(--primary);font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px}
-.phase-days i{font-size:.75rem}
-.phase-route{font-size:.9rem;color:var(--text-light);margin-bottom:16px;line-height:1.6}
-.phase-highlights{display:flex;flex-wrap:wrap;gap:8px}
-.phase-tag{background:var(--cream);color:var(--dark-muted);font-size:.75rem;font-weight:600;padding:6px 12px;border-radius:100px}
-
-/* Stats Bar */
-.stats-bar{background:var(--white);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow-md);margin-bottom:60px}
-.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:32px;text-align:center}
-.stat-item{position:relative}
-.stat-item:not(:last-child)::after{content:"";position:absolute;right:-16px;top:10%;height:80%;width:1px;background:var(--gray-200)}
-.stat-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--white);font-size:1.2rem;margin-bottom:12px}
-.stat-value{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--dark);line-height:1}
-.stat-label{font-size:.8rem;color:var(--text-light);margin-top:8px;text-transform:uppercase;letter-spacing:.05em}
-
-/* Route Banner */
-.route-banner{background:linear-gradient(135deg,var(--dark),var(--dark-muted));border-radius:var(--radius);padding:32px 40px;display:flex;align-items:center;gap:32px;color:var(--white);box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-.route-banner::before{content:"";position:absolute;top:-50%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(87,197,182,.2),transparent);border-radius:50%}
-.route-banner i{font-size:2rem;color:var(--accent)}
-.route-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--accent-light);margin-bottom:4px}
-.route-text{font-size:1rem;line-height:1.8;font-weight:300}
-
-/* Timeline */
-.timeline-section{background:var(--white);border-radius:var(--radius);padding:48px;box-shadow:var(--shadow-sm)}
-.timeline{position:relative;padding-left:40px}
-.timeline::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--primary),var(--accent),var(--success))}
-.tl-item{position:relative;margin-bottom:32px}
-.tl-item:last-child{margin-bottom:0}
-.tl-dot{position:absolute;left:-33px;top:20px;width:20px;height:20px;border-radius:50%;background:var(--white);border:3px solid var(--primary);box-shadow:0 0 0 4px rgba(26,95,122,.1);transition:all .3s ease}
-.tl-item:hover .tl-dot{background:var(--primary);transform:scale(1.2)}
-.tl-card{background:var(--gray-50);border-radius:var(--radius-sm);padding:24px;border:1px solid var(--gray-100);transition:all .3s ease}
-.tl-item:hover .tl-card{background:var(--white);box-shadow:var(--shadow-md);transform:translateX(8px)}
-.tl-date{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:var(--white);font-size:.75rem;font-weight:600;padding:6px 14px;border-radius:100px;margin-bottom:12px}
-.tl-route{font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:8px}
-.tl-info{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
-.tl-badge{font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px}
-.tl-badge.country{background:var(--cream);color:var(--dark-muted)}
-.tl-badge.dolo{background:var(--accent-light);color:var(--dark)}
-.tl-note{font-size:.9rem;color:var(--text-light)}
-
-/* Map Section */
-.map-section{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
-.map-container{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md)}
-.map-header{padding:24px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center}
-.map-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--dark)}
-.map-legend{display:flex;gap:16px;font-size:.8rem;color:var(--text-light)}
-.map-legend span{display:flex;align-items:center;gap:6px}
-#map1{width:100%;height:500px}
-.day-sidebar{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);max-height:600px;overflow:hidden;display:flex;flex-direction:column}
-.day-sidebar-header{padding:20px 24px;border-bottom:1px solid var(--gray-100);font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--dark)}
-.day-list{flex:1;overflow-y:auto;padding:16px}
-.day-card{position:relative;border:1px solid var(--gray-100);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;cursor:pointer;transition:all .3s ease;background:var(--white);overflow:hidden}
-.day-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gray-200);transition:all .3s ease}
-.day-card:hover{border-color:var(--primary);transform:translateX(4px)}
-.day-card:hover::before{background:var(--primary)}
-.day-card.active{background:linear-gradient(135deg,rgba(26,95,122,.05),rgba(87,197,182,.05));border-color:var(--primary)}
-.day-card.active::before{background:var(--primary)}
-.day-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.day-card-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--primary)}
-.day-card-km{font-size:.85rem;font-weight:700;color:var(--accent)}
-.day-card-date{font-size:.8rem;color:var(--text-light);margin-bottom:4px}
-.day-card-route{font-size:.9rem;font-weight:600;color:var(--dark)}
-.day-card-desc{font-size:.8rem;color:var(--text-light);margin-top:6px}
-
-/* Table */
-.table-container{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
-.table-header{padding:32px 40px 24px;border-bottom:1px solid var(--gray-100)}
-.table-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--dark)}
-table{width:100%;border-collapse:collapse}
-thead th{background:var(--gray-50);text-align:left;padding:16px 24px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);border-bottom:2px solid var(--gray-100)}
-tbody td{padding:16px 24px;border-bottom:1px solid var(--gray-100);font-size:.9rem;vertical-align:middle}
-tbody tr{transition:background .2s ease}
-tbody tr:hover{background:rgba(26,95,122,.02)}
-tbody tr:last-child td{border-bottom:none}
-td.day{font-weight:700;color:var(--primary);white-space:nowrap}
-td.route{font-weight:600;color:var(--dark)}
-td.km{font-weight:700;color:var(--dark);font-family:'Playfair Display',serif;font-size:1.1rem}
-td.km.zero{color:var(--text-muted);font-size:.9rem}
-td.note{color:var(--text-light);font-size:.85rem}
-tr.total{background:var(--cream)}
-tr.total td{font-weight:700;color:var(--dark);border-top:2px solid var(--accent)}
-
-/* Tips */
-.tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-.tip-card{background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-sm);transition:all .4s cubic-bezier(.175,.885,.32,1.275);border:1px solid var(--gray-100);position:relative;overflow:hidden}
-.tip-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
-.tip-card::before{content:"";position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,transparent 50%,rgba(26,95,122,.05) 50%);border-radius:0 0 0 100%}
-.tip-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--primary-light),var(--primary));border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--white);font-size:1.1rem;margin-bottom:16px}
-.tip-title{font-weight:700;color:var(--dark);font-size:1rem;margin-bottom:8px}
-.tip-desc{font-size:.88rem;color:var(--text-light);line-height:1.7}
-
-/* Notes */
-.note-card{border-radius:var(--radius);padding:28px 32px;margin-bottom:24px;display:flex;gap:20px;align-items:flex-start}
-.note-card.info{background:linear-gradient(135deg,rgba(26,95,122,.08),rgba(87,197,182,.05));border:1px solid rgba(26,95,122,.15)}
-.note-card.warning{background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(247,220,111,.1));border:1px solid rgba(243,156,18,.2)}
-.note-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
-.note-card.info .note-icon{background:var(--primary);color:var(--white)}
-.note-card.warning .note-icon{background:var(--accent);color:var(--white)}
-.note-content{flex:1}
-.note-content strong{display:block;margin-bottom:4px;color:var(--dark)}
-.note-content p{font-size:.9rem;color:var(--text-light);line-height:1.7;margin:0}
-
-/* Footer */
-.footer{background:var(--dark);color:rgba(255,255,255,.5);text-align:center;padding:48px 24px;font-size:.85rem}
-.footer-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--white);margin-bottom:12px}
-.footer-links{display:flex;justify-content:center;gap:24px;margin:16px 0}
-.footer-links a{color:var(--accent-light);text-decoration:none;font-size:.8rem;transition:color .3s ease}
-.footer-links a:hover{color:var(--white)}
-
-/* Responsive */
-@media(max-width:1024px){
-  .map-section{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:repeat(3,1fr)}
-  .stat-item:not(:last-child)::after{display:none}
-}
-@media(max-width:768px){
-  .hero-content{padding:60px 24px 80px}
-  .hero h1{font-size:2rem}
-  .hero-stats{gap:24px}
-  .hero-stat-num{font-size:2rem}
-  .section{padding:60px 0}
-  .section-title{font-size:1.8rem}
-  .phases-grid{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .timeline-section{padding:24px}
-  .table-container{overflow-x:auto}
-  .tips-grid{grid-template-columns:1fr}
-}
-
-/* Scroll Animation */
-.animate-on-scroll{opacity:0;transform:translateY(30px);transition:all .6s cubic-bezier(.175,.885,.32,1.275)}
-.animate-on-scroll.visible{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
 
-<!-- Hero Section -->
-<section class="hero">
-  <div class="float-shapes">
-    <div class="float-shape"></div>
-    <div class="float-shape"></div>
-    <div class="float-shape"></div>
+<nav class="bottom-nav">
+  <a href="#hero" class="active" data-tab="home"><i class="fas fa-home"></i><span>홈</span></a>
+  <a href="#phases" data-tab="phases"><i class="fas fa-route"></i><span>일정</span></a>
+  <a href="#map-section" data-tab="map"><i class="fas fa-map-marked-alt"></i><span>지도</span></a>
+  <a href="#tips" data-tab="tips"><i class="fas fa-lightbulb"></i><span>팁</span></a>
+  <a href="#schedule" data-tab="schedule"><i class="fas fa-table"></i><span>일정표</span></a>
+</nav>
+
+<section class="hero" id="hero">
+  <div class="hero-badge"><i class="fas fa-plane"></i> 2027년 유럽 로드트립</div>
+  <h1 class="hero-title">유럽 5개국<br>자유여행</h1>
+  <p class="hero-subtitle">뮌헨 출발 완전한 도로 여행 · 2027.07.17 - 08.06</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-value">21</div><div class="hero-stat-label">일간 여행</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">5</div><div class="hero-stat-label">개국 방문</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">2,374</div><div class="hero-stat-label">km 주행</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">9</div><div class="hero-stat-label">단계 코스</div></div>
   </div>
-  <div class="hero-content">
-    <div class="hero-badge">
-      <i class="fas fa-plane"></i>
-      Europe Road Trip 2027
+  <div class="hero-route">
+    <span class="hero-route-tag">🇩🇪 뮌헨</span>
+    <i class="fas fa-arrow-right hero-route-arrow"></i>
+    <span class="hero-route-tag">🇮🇹 이탈리아</span>
+    <i class="fas fa-arrow-right hero-route-arrow"></i>
+    <span class="hero-route-tag">🇦🇹 오스트리아</span>
+    <i class="fas fa-arrow-right hero-route-arrow"></i>
+    <span class="hero-route-tag">🇭🇺 헝가리</span>
+    <i class="fas fa-arrow-right hero-route-arrow"></i>
+    <span class="hero-route-tag">🇨🇿 체코</span>
+    <i class="fas fa-arrow-right hero-route-arrow"></i>
+    <span class="hero-route-tag">🇩🇪 뮌헨</span>
+  </div>
+</section>
+
+<section id="phases">
+  <div class="section-header reveal"><h2>여정 단계</h2><p>9단계 로드트립 코스</p></div>
+  <div class="phases-scroll" id="phasesScroll">
+    <div class="phase-card" style="--pc:#e74c3c">
+      <div class="phase-card-number" style="background:rgba(231,76,60,0.2);color:#e74c3c">1</div>
+      <div class="phase-card-title">뮌헨 → 코르티나</div>
+      <div class="phase-card-dates">7/17 - 7/20 · 3박</div>
+      <div class="phase-card-route"> 이탈리아 돌로미티</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">트레 치메</span>
+        <span class="phase-tag">미수리나</span>
+        <span class="phase-tag">브라이에스</span>
+      </div>
     </div>
-    <h1>뮌헨 인아웃<br>풀드라이브 21일<span>알프스 · 돌로미티 · 동유럽 · 프라하<br>5개국 자동차 여행의 모든 것</span></h1>
-    <p class="hero-subtitle">서울 → 뮌헨 왕복 직항 · 2027.7.17 ~ 8.6 · 렌트카 풀코스</p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-num">21</div>
-        <div class="hero-stat-label">일간의 여정</div>
+    <div class="phase-card" style="--pc:#e67e22">
+      <div class="phase-card-number" style="background:rgba(230,126,34,0.2);color:#e67e22">2</div>
+      <div class="phase-card-title">코르티나 → 오르티세이</div>
+      <div class="phase-card-dates">7/21 - 7/22 · 2박</div>
+      <div class="phase-card-route">발 가르디나</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">세체다</span>
+        <span class="phase-tag">젤라 론다</span>
+        <span class="phase-tag">가르데나 패스</span>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">5</div>
-        <div class="hero-stat-label">개국 탐험</div>
+    </div>
+    <div class="phase-card" style="--pc:#f39c12">
+      <div class="phase-card-number" style="background:rgba(243,156,18,0.2);color:#f39c12">3</div>
+      <div class="phase-card-title">오르티세이 → 그라츠</div>
+      <div class="phase-card-dates">7/23 · 1박 · 400km</div>
+      <div class="phase-card-route">오스트리아 국경 횡단</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">비네트</span>
+        <span class="phase-tag">장거리 이동</span>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">2,374</div>
-        <div class="hero-stat-label">킬로미터</div>
+    </div>
+    <div class="phase-card" style="--pc:#2ecc71">
+      <div class="phase-card-number" style="background:rgba(46,204,113,0.2);color:#2ecc71">4</div>
+      <div class="phase-card-title">그라츠 → 부다페스트</div>
+      <div class="phase-card-dates">7/24 - 7/25 · 2박</div>
+      <div class="phase-card-route">헝가리 수도</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">다뉴브 야경</span>
+        <span class="phase-tag">부다 성</span>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">12</div>
-        <div class="hero-stat-label">일 드라이브</div>
+    </div>
+    <div class="phase-card" style="--pc:#3498db">
+      <div class="phase-card-number" style="background:rgba(52,152,219,0.2);color:#3498db">5</div>
+      <div class="phase-card-title">부다페스트 → 빈</div>
+      <div class="phase-card-dates">7/26 - 7/27 · 2박</div>
+      <div class="phase-card-route">오스트리아 수도</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">쇤브룬</span>
+        <span class="phase-tag">자허르토르테</span>
+      </div>
+    </div>
+    <div class="phase-card" style="--pc:#9b59b6">
+      <div class="phase-card-number" style="background:rgba(155,89,182,0.2);color:#9b59b6">6</div>
+      <div class="phase-card-title">빈 → 프라하</div>
+      <div class="phase-card-dates">7/28 - 7/30 · 3박</div>
+      <div class="phase-card-route">체코 수도</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">천문시계</span>
+        <span class="phase-tag">카를교</span>
+      </div>
+    </div>
+    <div class="phase-card" style="--pc:#1abc9c">
+      <div class="phase-card-number" style="background:rgba(26,188,156,0.2);color:#1abc9c">7</div>
+      <div class="phase-card-title">프라하 → 체스키크루모프 → 할슈타트</div>
+      <div class="phase-card-dates">7/31 - 8/2 · 2박</div>
+      <div class="phase-card-route">오스트리아 호수마을</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">체스키크루모프</span>
+        <span class="phase-tag">할슈타트</span>
+      </div>
+    </div>
+    <div class="phase-card" style="--pc:#e74c3c">
+      <div class="phase-card-number" style="background:rgba(231,76,60,0.2);color:#e74c3c">8</div>
+      <div class="phase-card-title">할슈타트 → 잘츠부르크</div>
+      <div class="phase-card-dates">8/3 - 8/4 · 2박</div>
+      <div class="phase-card-route">모차르트의 도시</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">독수리 둥지</span>
+        <span class="phase-tag">잘츠부르크 성</span>
+      </div>
+    </div>
+    <div class="phase-card" style="--pc:#f39c12">
+      <div class="phase-card-number" style="background:rgba(243,156,18,0.2);color:#f39c12">9</div>
+      <div class="phase-card-title">잘츠부르크 → 뮌헨 → MUC</div>
+      <div class="phase-card-dates">8/5 - 8/6 · 1박</div>
+      <div class="phase-card-route">귀국</div>
+      <div class="phase-card-tags">
+        <span class="phase-tag">뮌헨 경유</span>
+        <span class="phase-tag">LH718</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Phases Section -->
-<section class="section">
-  <div class="container">
-    <div class="section-header animate-on-scroll">
-      <div class="section-icon"><i class="fas fa-route"></i></div>
-      <h2 class="section-title">여정의 9가지 장</h2>
-      <p class="section-subtitle">뮌헨에서 시작해 알프스를 휘감고 동유럽까지, 완벽한 풀드라이브 코스</p>
+<section id="stats">
+  <div class="section-header reveal"><h2>여행 통계</h2><p>상세 기록</p></div>
+  <div class="stats-grid">
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-calendar-days"></i></div>
+      <div class="stat-value">21</div>
+      <div class="stat-label">총 일수</div>
     </div>
-    <div class="phases-grid">
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 01</div>
-        <div class="phase-flag">🇩🇪 🇮🇹</div>
-        <h3 class="phase-title">도착 & 돌로미티 동부</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/17 ~ 7/20 · 3박 4일</div>
-        <p class="phase-route">뮌헨 공항 도착 → 코르티나 담페초</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">트레 치메</span>
-          <span class="phase-tag">미수리나 호수</span>
-          <span class="phase-tag">브라이에스</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 02</div>
-        <div class="phase-flag">🇮🇹</div>
-        <h3 class="phase-title">돌로미티 서부</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/21 ~ 7/22 · 1박 2일</div>
-        <p class="phase-route">코르티나 → 오르티세이</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">세체다</span>
-          <span class="phase-tag">셀라 론다</span>
-          <span class="phase-tag">가르데나 패스</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 03</div>
-        <div class="phase-flag">🇦🇹</div>
-        <h3 class="phase-title">오스트리아 경유</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/23 · 1박 1일</div>
-        <p class="phase-route">오르티세이 → 그라츠</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">비네트 구매</span>
-          <span class="phase-tag">슐로스베르크</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 04</div>
-        <div class="phase-flag">🇭🇺</div>
-        <h3 class="phase-title">부다페스트</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/24 ~ 7/25 · 1박 2일</div>
-        <p class="phase-route">그라츠 → 부다페스트</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">다뉴브 야경</span>
-          <span class="phase-tag">부다 성</span>
-          <span class="phase-tag">온천</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 05</div>
-        <div class="phase-flag">🇦🇹</div>
-        <h3 class="phase-title">비엔나</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/26 ~ 7/27 · 1박 2일</div>
-        <p class="phase-route">부다페스트 → 비엔나</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">쇤브룬</span>
-          <span class="phase-tag">자허토르테</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 06</div>
-        <div class="phase-flag">🇨🇿</div>
-        <h3 class="phase-title">프라하</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/28 ~ 7/30 · 2박 3일</div>
-        <p class="phase-route">비엔나 → 프라하</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">천문시계</span>
-          <span class="phase-tag">카를교</span>
-          <span class="phase-tag">블타바 유람선</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 07</div>
-        <div class="phase-flag">🇨🇿 🇦🇹</div>
-        <h3 class="phase-title">중세마을 & 호수</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 7/31 ~ 8/2 · 2박 3일</div>
-        <p class="phase-route">프라하 → 체스키 크룸로프 → 할슈타트</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">크롬로프 성</span>
-          <span class="phase-tag">다흐슈타인 빙하</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 08</div>
-        <div class="phase-flag">🇦🇹</div>
-        <h3 class="phase-title">잘츠부르크 & 쾨니히스제</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 8/3 ~ 8/4 · 1박 2일</div>
-        <p class="phase-route">할슈타트 → 잘츠부르크</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">호엔잘츠부르크</span>
-          <span class="phase-tag">독수리 둥지</span>
-        </div>
-      </div>
-      <div class="phase-card animate-on-scroll">
-        <div class="phase-num">Phase 09</div>
-        <div class="phase-flag">🇩🇪</div>
-        <h3 class="phase-title">뮌헨 & 귀국</h3>
-        <div class="phase-days"><i class="far fa-calendar"></i> 8/5 ~ 8/6 · 1박 2일</div>
-        <p class="phase-route">잘츠부르크 → 뮌헨 시내 → MUC 공항</p>
-        <div class="phase-highlights">
-          <span class="phase-tag">호프브로이하우스</span>
-          <span class="phase-tag">글켄슈필</span>
-        </div>
-      </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-car"></i></div>
+      <div class="stat-value">2,374</div>
+      <div class="stat-label">총 주행 거리 (km)</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(52,152,219,0.15);color:#3498db"><i class="fas fa-map-location-dot"></i></div>
+      <div class="stat-value">5</div>
+      <div class="stat-label">방문 국가</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(155,89,182,0.15);color:#9b59b6"><i class="fas fa-hotel"></i></div>
+      <div class="stat-value">17</div>
+      <div class="stat-label">숙박 호텔</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-plane-departure"></i></div>
+      <div class="stat-value">LH719</div>
+      <div class="stat-label">출발 항공편</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(26,188,156,0.15);color:#1abc9c"><i class="fas fa-plane-arrival"></i></div>
+      <div class="stat-value">LH718</div>
+      <div class="stat-label">귀국 항공편</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-mountain"></i></div>
+      <div class="stat-value">9</div>
+      <div class="stat-label">여정 단계</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-route"></i></div>
+      <div class="stat-value">7/17-8/6</div>
+      <div class="stat-label">여행 기간</div>
     </div>
   </div>
 </section>
 
-<!-- Stats Section -->
-<section class="section" style="padding-top:0">
-  <div class="container">
-    <div class="stats-bar animate-on-scroll">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fas fa-road"></i></div>
-          <div class="stat-value">2,374</div>
-          <div class="stat-label">킬로미터</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fas fa-car"></i></div>
-          <div class="stat-value">12</div>
-          <div class="stat-label">드라이브 일수</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-          <div class="stat-value">~198</div>
-          <div class="stat-label">일 평균 km</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fas fa-flag-checkered"></i></div>
-          <div class="stat-value">400</div>
-          <div class="stat-label">최장 거리</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon"><i class="fas fa-globe-europe"></i></div>
-          <div class="stat-value">5</div>
-          <div class="stat-label">방문국가</div>
-        </div>
-      </div>
+<section id="timeline">
+  <div class="section-header reveal"><h2>타임라인</h2><p>날짜별 일정 흐름</p></div>
+  <div class="timeline-line">
+    <div class="timeline-item"><div class="timeline-date">7월 17일 (토)</div><div class="timeline-title">뮌헨 도착</div><div class="timeline-desc">LH719 · 뮌헨 공항 도착 → 렌터카 수령 → 첫 숙소</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 18일 (일)</div><div class="timeline-title">코르티나 이동</div><div class="timeline-desc">뮌헨 → 코르티나 디	AM페초 · 돌로미티 입성</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 19일 (월)</div><div class="timeline-title">트레 치메</div><div class="timeline-desc">트레 치메 데 비가探 · 미수리나 호수</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 20일 (화)</div><div class="timeline-title">브라이에스 호수</div><div class="timeline-desc">라고 디 브라이에스 · 푸르비아 호수</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 21일 (수)</div><div class="timeline-title">오르티세이 이동</div><div class="timeline-desc">코르티나 → 오르티세이 · 세체다 케이블카</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 22일 (목)</div><div class="timeline-title">젤라 론다</div><div class="timeline-desc">젤라 론다 드라이브 · 가르데나 패스</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 23일 (금)</div><div class="timeline-title">그라츠 이동</div><div class="timeline-desc">오르티세이 → 그라츠 · 400km · 비네트 구매</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 24일 (토)</div><div class="timeline-title">부다페스트 도착</div><div class="timeline-desc">그라츠 → 부다페스트 · 다뉴브강 야경</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 25일 (일)</div><div class="timeline-title">부다 성</div><div class="timeline-desc">부다 성 탐방 · 어부의 요새 · 매틀레 시장</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 26일 (월)</div><div class="timeline-title">빈 이동</div><div class="timeline-desc">부다페스트 → 빈</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 27일 (화)</div><div class="timeline-title">쇤브룬 궁전</div><div class="timeline-desc">쇤브룬 궁전 · 자허르토르테 맛보기</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 28일 (수)</div><div class="timeline-title">프라하 이동</div><div class="timeline-desc">빈 → 프라하</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 29일 (목)</div><div class="timeline-title">프라하 탐방</div><div class="timeline-desc">천문시계 · 카를교 · 구시가지 광장</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 30일 (금)</div><div class="timeline-title">프라하 자유시간</div><div class="timeline-desc">프라하 성 · 요새 탐방</div></div>
+    <div class="timeline-item"><div class="timeline-date">7월 31일 (토)</div><div class="timeline-title">체스키크루모프</div><div class="timeline-desc">프라하 → 체스키크루모프 · 성城堡 탐방</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 1일 (일)</div><div class="timeline-title">할슈타트 이동</div><div class="timeline-desc">체스키크루모프 → 할슈타트</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 2일 (월)</div><div class="timeline-title">할슈타트 탐방</div><div class="timeline-desc">할슈타트 호수 · 소금 광산</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 3일 (화)</div><div class="timeline-title">잘츠부르크 이동</div><div class="timeline-desc">할슈타트 → 잘츠부르크</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 4일 (수)</div><div class="timeline-title">독수리 둥지</div><div class="timeline-desc">독수리 둥지(Obersalzberg) · 잘츠부르크 성</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 5일 (목)</div><div class="timeline-title">뮌헨 이동</div><div class="timeline-desc">잘츠부르크 → 뮌헨</div></div>
+    <div class="timeline-item"><div class="timeline-date">8월 6일 (금)</div><div class="timeline-title">귀국</div><div class="timeline-desc">LH718 · 뮌헨 공항 출발</div></div>
+  </div>
+</section>
+
+<section id="map-section">
+  <div class="section-header reveal"><h2>지도</h2><p>전체 경로 및 일일 장소</p></div>
+  <div class="map-container">
+    <div class="map-wrapper" id="map"></div>
+    <div class="day-sidebar" id="daySidebar"></div>
+  </div>
+</section>
+
+<section id="schedule">
+  <div class="section-header reveal"><h2>상세 일정표</h2><p>21일 전체 일정</p></div>
+  <div class="schedule-table-wrap">
+    <table class="schedule-table" id="scheduleTable"></table>
+  </div>
+</section>
+
+<section id="tips">
+  <div class="section-header reveal"><h2>여행 팁</h2><p>유용한 정보</p></div>
+  <div class="tips-grid">
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-car"></i></div>
+      <div class="tip-title">렌터카</div>
+      <div class="tip-content">뮌헨 공항에서 렌터카 수령. 자동변속기 SUV 추천. 유럽용 내비 필수. 주차는 대부분 유료.</div>
     </div>
-    <div class="route-banner animate-on-scroll">
-      <i class="fas fa-map-marked-alt"></i>
-      <div>
-        <div class="route-label">전체 루트</div>
-        <div class="route-text">MUC → 코르티나 담페초 → 오르티세이 → 그라츠 → 부다페스트 → 비엔나 → 프라하 → 체스키크룸로프 → 할슈타트 → 잘츠부르크 → 뮌헨 시내 → MUC</div>
-      </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(26,95,122,0.15);color:var(--primary)"><i class="fas fa-gas-pump"></i></div>
+      <div class="tip-title">연료 & 톨게이트</div>
+      <div class="tip-content">독일 고속도로 무료. 오스트리아 비네트(€9.90/10일) 필수. 헝가리 M5 고속도로 유료. 이탈리아 톨비 높음.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-sim-card"></i></div>
+      <div class="tip-title">유심 & 통신</div>
+      <div class="tip-content">EU roaming. 한국에서 유심 구매 또는 현지에서买. 5개국 커버리지 확인.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-euro-sign"></i></div>
+      <div class="tip-title">화폐 & 결제</div>
+      <div class="tip-content">모든国家 유로화 사용. 체코만 코루나. 신용카드 대부분 가능. 현금도 준비.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(155,89,182,0.15);color:#9b59b6"><i class="fas fa-temperature-high"></i></div>
+      <div class="tip-title">날씨 & 복장</div>
+      <div class="tip-content">7-8월 평균 25-30도. 산악지대는 쌀쌀. 겉옷 필수. 자외선 차단 필수.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-utensils"></i></div>
+      <div class="tip-title">식사 & 음료</div>
+      <div class="tip-content">오스트리아: 비너 슈니첼, 자허르토르테. 헝가리: 굴라시. 체코: 트로클로비 체키치. 이탈리아: 파스타, 피자.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(26,95,122,0.15);color:var(--primary)"><i class="fas fa-language"></i></div>
+      <div class="tip-title">언어</div>
+      <div class="tip-content">독일어, 이탈리아어, 헝가리어, 체코어. 영어 관광지에서 통용. 기본 인사 필수.</div>
+    </div>
+    <div class="tip-card reveal">
+      <div class="tip-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-shield-halved"></i></div>
+      <div class="tip-title">보험 & 안전</div>
+      <div class="tip-content">해외여행보험 필수. 유럽 의료비 비쌈. 도난 주의. 주요 문서 백업.</div>
     </div>
   </div>
 </section>
 
-<!-- Timeline Section -->
-<section class="section">
-  <div class="container">
-    <div class="section-header animate-on-scroll">
-      <div class="section-icon"><i class="fas fa-list-ol"></i></div>
-      <h2 class="section-title">구간별 상세 일정</h2>
-      <p class="section-subtitle">10개 구간, 20박의 여정을 한눈에 확인하세요</p>
-    </div>
-    <div class="timeline-section animate-on-scroll">
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="far fa-plane-arrival"></i> 7/17 토</div>
-            <div class="tl-route">✈ ICN → MUC 도착 · 렌트 픽업</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 독일</span>
-            </div>
-            <div class="tl-note">뮌헨 공항호텔 1박 · 장거리 비행 후 휴식</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-mountain"></i> 7/18–20</div>
-            <div class="tl-route">뮌헨 → 코르티나 담페초</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 이탈리아 3박</span>
-              <span class="tl-badge dolo"><i class="fas fa-mountain"></i> 돌로미티 동부</span>
-            </div>
-            <div class="tl-note">트레 치메 · 미수리나 · 브라이에스 호수 · 도비아코</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-cable-car"></i> 7/21–22</div>
-            <div class="tl-route">코르티나 → 오르티세이</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 이탈리아 2박</span>
-              <span class="tl-badge dolo"><i class="fas fa-mountain"></i> 돌로미티 서부</span>
-            </div>
-            <div class="tl-note">가르데나 패스 · 세체다 케이블카 · 셀라 론다 루프</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-car"></i> 7/23</div>
-            <div class="tl-route">오르티세이 → 그라츠 (장거리 400km)</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 오스트리아 1박</span>
-            </div>
-            <div class="tl-note">A22/E45 → A9 · 비네트 휴게소 구매 · 슐로스베르크 일몰</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-landmark"></i> 7/24–25</div>
-            <div class="tl-route">그라츠 → 부다페스트</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 헝가리 2박</span>
-            </div>
-            <div class="tl-note">다뉴브 야경 · 부다 성 · 마차시 교회 · 어부의 요새</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-music"></i> 7/26–27</div>
-            <div class="tl-route">부다페스트 → 비엔나</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 오스트리아 2박</span>
-            </div>
-            <div class="tl-note">쇤브룬 궁전 · 링슈트라세 · Café Sacher</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-clock"></i> 7/28–30</div>
-            <div class="tl-route">비엔나 → 프라하</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 체코 3박</span>
-            </div>
-            <div class="tl-note">구시가 · 천문시계 · 카를교 · 블타바 유람선</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-church"></i> 7/31</div>
-            <div class="tl-route">프라하 → 체스키 크룸로프</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 체코 1박</span>
-            </div>
-            <div class="tl-note">UNESCO 중세 마을 · 크롬로프 성 · 탑 전망</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-water"></i> 8/1–2</div>
-            <div class="tl-route">체크 → 할슈타트</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 오스트리아 2박</span>
-            </div>
-            <div class="tl-note">다흐슈타인 빙하 · 5finger 전망대 · 호숫가 산책</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-eagle"></i> 8/3–4</div>
-            <div class="tl-route">할슈타트 → 잘츠부르크</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 오스트리아 2박</span>
-            </div>
-            <div class="tl-note">호엔잘츠부르크 · 구시가 · 쾨니히스제 · 독수리 둥지</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-beer"></i> 8/5 화</div>
-            <div class="tl-route">잘츠부르크 → 뮌헨 시내</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-map-pin"></i> 독일 1박</span>
-            </div>
-            <div class="tl-note">글켄슈필 · 마리엔광장 · 호프브로이하우스</div>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-card">
-            <div class="tl-date"><i class="fas fa-plane-departure"></i> 8/6 수</div>
-            <div class="tl-route">뮌헨 → MUC (15:55 출발)</div>
-            <div class="tl-info">
-              <span class="tl-badge country"><i class="fas fa-home"></i> 귀국</span>
-            </div>
-            <div class="tl-note">10:00 체크아웃 · 렌트카 풀충전 반납 · → ICN (+1)</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Map Section -->
-<section class="section">
-  <div class="container">
-    <div class="section-header animate-on-scroll">
-      <div class="section-icon"><i class="fas fa-map"></i></div>
-      <h2 class="section-title">동선 지도</h2>
-      <p class="section-subtitle">Leaflet OpenStreetMap · 날짜를 클릭하면 해당 구간으로 이동합니다</p>
-    </div>
-    <div class="map-section animate-on-scroll">
-      <div class="map-container">
-        <div class="map-header">
-          <div class="map-title">21일간의 여정</div>
-          <div class="map-legend">
-            <span><span style="display:inline-block;width:20px;height:3px;background:var(--primary);border-radius:2px"></span> 이동 경로</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--success);border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1px var(--success)"></span> 시작</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--danger);border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1px var(--danger)"></span> 종료</span>
-          </div>
-        </div>
-        <div id="map1"></div>
-      </div>
-      <div class="day-sidebar">
-        <div class="day-sidebar-header"><i class="far fa-calendar-alt"></i> Day by Day (21일)</div>
-        <div class="day-list" id="list1"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Detail Table Section -->
-<section class="section">
-  <div class="container">
-    <div class="section-header animate-on-scroll">
-      <div class="section-icon"><i class="fas fa-table"></i></div>
-      <h2 class="section-title">상세 일정표</h2>
-      <p class="section-subtitle">일자별 운행거리와 핵심 관광 메모를 한눈에</p>
-    </div>
-    <div class="table-container animate-on-scroll">
-      <table>
-        <thead>
-          <tr><th>날짜</th><th>구간</th><th>거리</th><th>핵심 관광 / 메모</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="day">7/17 토</td><td class="route">✈ ICN→MUC 도착 17:30 · 렌트 픽업</td><td class="km zero">0</td><td class="note">뮌헨 공항호텔 1박 · 인아웃 · 휴식</td></tr>
-          <tr><td class="day">7/18 일</td><td class="route">뮌헨(공항) → 코르티나 담페초</td><td class="km">305</td><td class="note">A8/E45→브레네로 패스→알프스 진입 🏔️</td></tr>
-          <tr><td class="day">7/19 월</td><td class="route">트레 치메 · 미수리나 호수</td><td class="km">50</td><td class="note">⏰ 8시 전 도착 · 평화로운 하이킹</td></tr>
-          <tr><td class="day">7/20 화</td><td class="route">브라이에스 호수 · 도비아코</td><td class="km">60</td><td class="note">뗏목 대여 9시 전 · Olympia 피자</td></tr>
-          <tr><td class="day">7/21 수</td><td class="route">코르티나 → 오르티세이</td><td class="km">65</td><td class="note">가르데나 패스(Passo Gardena) 사진 필수</td></tr>
-          <tr><td class="day">7/22 목</td><td class="route">세체다 · 셀라 론다 루프</td><td class="km">60</td><td class="note">7:30 케이블카 · €34 · 셀라론다 2~3h</td></tr>
-          <tr><td class="day">7/23 금</td><td class="route">오르티세이 → 그라츠</td><td class="km">400</td><td class="note">A22/E45→A9 · 휴게소 비네트 구매 · 슐로스베르크 일몰</td></tr>
-          <tr><td class="day">7/24 토</td><td class="route">그라츠 → 부다페스트</td><td class="km">275</td><td class="note">다뉴브 야경 크루즈 · 세체니 온천 야간(토)</td></tr>
-          <tr><td class="day">7/25 일</td><td class="route">부다페스트 자유</td><td class="km zero">0</td><td class="note">부다성 · 마차시 교회 · 어부의 요새 · 의회 가이드 투어</td></tr>
-          <tr><td class="day">7/26 월</td><td class="route">부다페스트 → 비엔나</td><td class="km">243</td><td class="note">瑓브룬 궁전 (15시 이전 입장) · Parkplatz</td></tr>
-          <tr><td class="day">7/27 화</td><td class="route">비엔나 자유</td><td class="km zero">0</td><td class="note">트램 1·2번 링슈트라세 · Café Sacher 자허토르테</td></tr>
-          <tr><td class="day">7/28 수</td><td class="route">비엔나 → 프라하</td><td class="km">333</td><td class="note">P+R Chodov → 트램 · 구시가 · 천문시계(정시)</td></tr>
-          <tr><td class="day">7/29 목</td><td class="route">프라하 자유</td><td class="km zero">0</td><td class="note">프라하성 · 성비투스 대성당 · 황금골목 · 카를교</td></tr>
-          <tr><td class="day">7/30 금</td><td class="route">프라하 자유</td><td class="km zero">0</td><td class="note">블타바 1h 유람선 · 페트르시르 · 레트나 공원</td></tr>
-          <tr><td class="day">7/31 토</td><td class="route">프라하 → 체스키 크룸로프</td><td class="km">180</td><td class="note">중세 마을 · 크롬로프 성과 탑 · P1/P2 공영주차</td></tr>
-          <tr><td class="day">8/1 일</td><td class="route">체크 → 할슈타트</td><td class="km">148</td><td class="note">체코 국도 → 오스트리아 B145 경치 좋은 길</td></tr>
-          <tr><td class="day">8/2 월</td><td class="route">할슈타트 자유</td><td class="km zero">0</td><td class="note">다흐슈타인 케이블카 → 빙하 · 5finger 전망대 (사전예약)</td></tr>
-          <tr><td class="day">8/3 화</td><td class="route">할슈타트 → 잘츠부르크</td><td class="km">70</td><td class="note">호엔잘츠부르크 케이블카 · 모차르트 생가</td></tr>
-          <tr><td class="day">8/4 수</td><td class="route">잘츠부르크 자유</td><td class="km zero">0</td><td class="note">쾨니히스제 DT(독일) · 호수 유람선 · 성 바르톨로메오</td></tr>
-          <tr><td class="day">8/5 목</td><td class="route">잘츠부르크 → 뮌헨 시내</td><td class="km">145</td><td class="note">호텔 자체주차 필수 · 글켄슈필 · 호프브로이하우스</td></tr>
-          <tr><td class="day">8/6 금</td><td class="route">뮌헨 시내 → MUC (15:55 출발)</td><td class="km">40</td><td class="note">10:00 체크아웃 · 렌트카 풀충전 반납 · 면세</td></tr>
-          <tr class="total"><td>합계</td><td>풀드라이브 · 5개국</td><td>2,374 km</td><td>12일 운전 / 9일 휴식 (돌로미티 6박 + 동유럽 도시)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- Notes Section -->
-<section class="section">
-  <div class="container">
-    <div class="note-card info animate-on-scroll">
-      <div class="note-icon"><i class="fas fa-info"></i></div>
-      <div class="note-content">
-        <strong>여정 구조 요약 (v5)</strong>
-        <p><strong>돌로미티 선배치 6박</strong>(코르티나 4 + 오르티세이 2)으로 트레치메·미수리나·세체다·셀라론다 풀커버. <strong>동유럽 7박</strong>(부다 2 + 비엔나 2 + 프라하 3 + 체크 1) → 도시 집중. <strong>알프스 휘감으며 귀환</strong>: 프라하 → 체크(180) → 할슈타트(148) → 잘츠부르크(70) → 뮌헨 시내(145). <strong>뮌헨 시내 1박</strong> 클로징(글켄슈필·비어가르텐). 5개국(DE·IT·AT·HU·CZ), 모두 셍겐 내부.</p>
-      </div>
-    </div>
-    <div class="note-card warning animate-on-scroll">
-      <div class="note-icon"><i class="fas fa-exchange-alt"></i></div>
-      <div class="note-content">
-        <strong>변경 포인트 (vs. v4)</strong>
-        <p><strong>돌로미티 4박 → 6박</strong>(코르티나 4 + 오르티세이 2로 분리, 트레치메·세체다 둘 다 누림). <strong>슬로베니아·크로아티아 삭제</strong>(블레드·류블랴나·플리트비체 제거 → 그라츠 경유로 단축). <strong>체스키 크룸로프 1박 체류</strong>(데이트립 → 체류). <strong>할슈타트 1박 → 2박</strong>(다흐슈타인 빙하 추가). <strong>뮌헨 시내 1박 신설</strong>(공항 인아웃 → 시내 마무리). 총 km <strong>2,820 → 2,374</strong>, 운전일수 <strong>14 → 12</strong>, 피로 ↓.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Tips Section -->
-<section class="section" style="background:var(--white)">
-  <div class="container">
-    <div class="section-header animate-on-scroll">
-      <div class="section-icon"><i class="fas fa-lightbulb"></i></div>
-      <h2 class="section-title">실전 팁</h2>
-      <p class="section-subtitle">비네트 · 톨 · 환율 · 보험 · 성수기 예약까지, 현지에서 부딪히기 전에 챙기는 15가지</p>
-    </div>
-    <div class="tips-grid">
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-ticket-alt"></i></div>
-        <div class="tip-title">비네트 (오스트리아)</div>
-        <div class="tip-desc">디지털 10일권. 7/23 오르티세이→그라츠 구간부터 필요. 휴게소(Station)에서 구매 가능. 미부착 시 고액 벌금.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-globe"></i></div>
-        <div class="tip-title">비네트 (헝가리·체코)</div>
-        <div class="tip-desc">헝가리: <strong>ematrica.nemzetiutdijfizetes.hu</strong>. 체코: <strong>edalnice.cz</strong>. 그라츠→부다페스트·비엔나→프라하 구간 필수.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-mountain"></i></div>
-        <div class="tip-title">돌로미티 6박 배분</div>
-        <div class="tip-desc">코르티나 4(트레치메·미수리나·브라이에스·도비아코) + 오르티세이 2(세체다 케이블카·셀라론다 루프). 7/22 셀라론다는 오르티세이 거점.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-route"></i></div>
-        <div class="tip-title">장거리 1회만</div>
-        <div class="tip-desc">7/23 오르티세이→그라츠 400km/4.5h. 비네트 휴게소 + 중간 점심 포함. 조기 출발 권장.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-umbrella-beach"></i></div>
-        <div class="tip-title">부다페스트</div>
-        <div class="tip-desc">Széchenyi(부다), Gellért(페스트). <strong>포린트(HUF)</strong> 기본. 큰 가게만 EUR. 24h 대중교통 패스.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-music"></i></div>
-        <div class="tip-title">비엔나</div>
-        <div class="tip-desc">트램 1·2번 링슈트라세. 쇤브룬은 15시 이전 입장. Café Sacher 자허토르테 필수.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-clock"></i></div>
-        <div class="tip-title">프라하</div>
-        <div class="tip-desc">P+R Chodov에 차량 → 트램. 구시가 도보. 천문시계 정시(매시 정각). 블타바 유람선 1h.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-church"></i></div>
-        <div class="tip-title">체스키 크룸로프</div>
-        <div class="tip-desc">UNESCO 중세 마을. 크롬로프 성과 탑 전망 필수. 성 아래 P1/P2 공영주차장 (도보 5분).</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-water"></i></div>
-        <div class="tip-title">할슈타트 + 다흐슈타인</div>
-        <div class="tip-desc">다흐슈타인 케이블카 25분 거리 → 빙하 전망대 + 5finger 전망대. <strong>온라인 사전 예약 필수</strong>.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-eagle"></i></div>
-        <div class="tip-title">잘츠부르크</div>
-        <div class="tip-desc">호엔잘츠부르크 케이블카 · 게트라이데가세 · 모차르트 생가. 쾨니히스제 DT(독일 국경 30분) 추천.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-beer"></i></div>
-        <div class="tip-title">뮌헨 시내 1박</div>
-        <div class="tip-desc">호텔 자체 주차장 필수. 글켄슈piel(11/12/17시) · 마리엔광장 · 호프브로이하우스 슈바인학센.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-coins"></i></div>
-        <div class="tip-title">환율</div>
-        <div class="tip-desc">🇭🇺 HUF · 🇨🇿 CZK(코루나). 신용카드 거의 다 되지만 잔돈은 현지 화폐만. ATM 우선.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-cogs"></i></div>
-        <div class="tip-title">변속기</div>
-        <div class="tip-desc">유럽 대부분 수동. 돌로미티 경사로는 <strong>오토</strong> 명시. 폭스바겐/스카oda 가성비.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-shield-alt"></i></div>
-        <div class="tip-title">보험</div>
-        <div class="tip-desc">완전보험(유리·타이어·카켐). 5개국 국경 통과 → 차량 일일 점검 권장.</div>
-      </div>
-      <div class="tip-card animate-on-scroll">
-        <div class="tip-icon"><i class="fas fa-calendar-check"></i></div>
-        <div class="tip-title">성수기 예약</div>
-        <div class="tip-desc">돌로미티(특히 오르티세이 7/21~22) · 프라하(7/28~30) · 뮌헨 시내(8/5) 지금부터 선예약.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-logo">2027 Europe Road Trip</div>
-    <p>뮌헨 인아웃 풀드라이브 21일 · 돌로미티 + 동유럽 + 알프스</p>
-    <div class="footer-links">
-      <a href="#"><i class="fab fa-github"></i> GitHub</a>
-      <a href="#"><i class="fas fa-envelope"></i> 문의</a>
-    </div>
-    <p style="margin-top:24px;font-size:.8rem">작성일 2026.8 · 풀드라이브 v5 · 거리·시간은 참고값, 실제는 지도 기반 재확인 필요</p>
-  </div>
+<footer>
+  <p>2027 유럽 로드트립 플래너 · 뮌헨 IN/OUT · 21일</p>
+  <p style="margin-top:6px;font-size:11px">LH719 → LH718 · 2027.07.17 - 08.06</p>
 </footer>
 
 <script>
-var COORDS={
-  "MUC":[48.3536407,11.7831852],
-  "뮌헨":[48.1351,11.5820],
-  "Cortina":[46.5378431,12.1358821],
-  "Ortisei":[46.5753618,11.6702281],
-  "Graz":[47.0678961,15.4417305],
-  "Budapest":[47.497912,19.040235],
-  "Vienna":[48.2080696,16.3713095],
-  "Prague":[50.0755381,14.4378005],
-  "Český Krumlov":[48.8127354,14.3174657],
-  "Hallstatt":[47.5622342,13.6492617],
-  "Salzburg":[47.8014154,13.0448441]
+const tripData = {
+  days: [
+    { day: 1, date: '7/17', weekday: '토', from: '뮌헨 공항', to: '코르티나', km: 350, phase: 1 },
+    { day: 2, date: '7/18', weekday: '일', from: '코르티나', to: '트레 치메', km: 30, phase: 1 },
+    { day: 3, date: '7/19', weekday: '월', from: '코르티나', to: '미수리나', km: 15, phase: 1 },
+    { day: 4, date: '7/20', weekday: '화', from: '코르티나', to: '브라이에스', km: 45, phase: 1 },
+    { day: 5, date: '7/21', weekday: '수', from: '코르티나', to: '오르티세이', km: 110, phase: 2 },
+    { day: 6, date: '7/22', weekday: '목', from: '오르티세이', to: '가르데나 패스', km: 60, phase: 2 },
+    { day: 7, date: '7/23', weekday: '금', from: '오르티세이', to: '그라츠', km: 400, phase: 3 },
+    { day: 8, date: '7/24', weekday: '토', from: '그라츠', to: '부다페스트', km: 280, phase: 4 },
+    { day: 9, date: '7/25', weekday: '일', from: '부다페스트', to: '부다페스트', km: 20, phase: 4 },
+    { day: 10, date: '7/26', weekday: '월', from: '부다페스트', to: '빈', km: 240, phase: 5 },
+    { day: 11, date: '7/27', weekday: '화', from: '빈', to: '빈', km: 20, phase: 5 },
+    { day: 12, date: '7/28', weekday: '수', from: '빈', to: '프라하', km: 330, phase: 6 },
+    { day: 13, date: '7/29', weekday: '목', from: '프라하', to: '프라하', km: 15, phase: 6 },
+    { day: 14, date: '7/30', weekday: '금', from: '프라하', to: '프라하', km: 15, phase: 6 },
+    { day: 15, date: '7/31', weekday: '토', from: '프라하', to: '체스키크루모프', km: 170, phase: 7 },
+    { day: 16, date: '8/1', weekday: '일', from: '체스키크루모프', to: '할슈타트', km: 200, phase: 7 },
+    { day: 17, date: '8/2', weekday: '월', from: '할슈타트', to: '할슈타트', km: 10, phase: 7 },
+    { day: 18, date: '8/3', weekday: '화', from: '할슈타트', to: '잘츠부르크', km: 75, phase: 8 },
+    { day: 19, date: '8/4', weekday: '수', from: '잘츠부르크', to: '독수리 둥지', km: 30, phase: 8 },
+    { day: 20, date: '8/5', weekday: '목', from: '잘츠부르크', to: '뮌헨', km: 145, phase: 9 },
+    { day: 21, date: '8/6', weekday: '금', from: '뮌헨', to: 'MUC 공항', km: 35, phase: 9 }
+  ],
+  phases: [
+    { num: 1, color: '#e74c3c', bg: 'rgba(231,76,60,0.12)' },
+    { num: 2, color: '#e67e22', bg: 'rgba(230,126,34,0.12)' },
+    { num: 3, color: '#f39c12', bg: 'rgba(243,156,18,0.12)' },
+    { num: 4, color: '#2ecc71', bg: 'rgba(46,204,113,0.12)' },
+    { num: 5, color: '#3498db', bg: 'rgba(52,152,219,0.12)' },
+    { num: 6, color: '#9b59b6', bg: 'rgba(155,89,182,0.12)' },
+    { num: 7, color: '#1abc9c', bg: 'rgba(26,188,156,0.12)' },
+    { num: 8, color: '#e74c3c', bg: 'rgba(231,76,60,0.12)' },
+    { num: 9, color: '#f39c12', bg: 'rgba(243,156,18,0.12)' }
+  ],
+  coords: {
+    'MUC': [48.3536407, 11.7831852],
+    '뮌헨': [48.1351, 11.5820],
+    'Cortina': [46.5378431, 12.1358821],
+    'Ortisei': [46.5753618, 11.6702281],
+    'Graz': [47.0678961, 15.4417305],
+    'Budapest': [47.497912, 19.040235],
+    'Vienna': [48.2080696, 16.3713095],
+    'Prague': [50.0755381, 14.4378005],
+    'Český Krumlov': [48.8127354, 14.3174657],
+    'Hallstatt': [47.5622342, 13.6492617],
+    'Salzburg': [47.8014154, 13.0448441]
+  },
+  route: ['MUC', 'Cortina', 'Ortisei', 'Graz', 'Budapest', 'Vienna', 'Prague', 'Český Krumlov', 'Hallstatt', 'Salzburg', 'MUC']
 };
 
-var OPT={
-  color:"#1a5f7a",
-  routeStops:["뮌헨","Cortina","Ortisei","Graz","Budapest","Vienna","Prague","Český Krumlov","Hallstatt","Salzburg","뮌헨","MUC"],
-  days:[
-    ["7/17 토","뮌헨","뮌헨","0","도착·렌트·공항호텔·인아웃 휴식","Munich"],
-    ["7/18 일","뮌헨","Cortina","305","A8/E45→브레네로 패스→알프스 진입","Cortina d'Ampezzo"],
-    ["7/19 월","Cortina","Cortina","50","⏰ 8시 전 도착 · 평화로운 트레치메 하이킹","Tre Cime"],
-    ["7/20 화","Cortina","Cortina","60","브라이에스 뗏목 · 도비아코 점심·산책","Lago di Braies"],
-    ["7/21 수","Cortina","Ortisei","65","가르데나 패스(Passo Gardena) 사진 필수","Val Gardena"],
-    ["7/22 목","Ortisei","Ortisei","60","세체다 케이블카 7:30 · 셀라론다 루프","Seceda"],
-    ["7/23 금","Ortisei","Graz","400","A22/E45→A9 · 휴게소 비네트 · 슐로스베르크 일몰","Graz"],
-    ["7/24 토","Graz","Budapest","275","다뉴브 야경 크루즈 · 세체니 온천 야간","Budapest"],
-    ["7/25 일","Budapest","Budapest","0","부다성 · 마차시 교회 · 어부의 요새 · 의회","Budapest"],
-    ["7/26 월","Budapest","Vienna","243","ernetesoulorn 궁전 15시 이전 입장","Vienna"],
-    ["7/27 화","Vienna","Vienna","0","트램 1·2번 링슈트라세 · 자허토르테","Vienna"],
-    ["7/28 수","Vienna","Prague","333","P+R Chodov → 트램 · 구시가 · 천문시계","Prague"],
-    ["7/29 목","Prague","Prague","0","프라하성 · 성비투스 대성당 · 카를교","Prague"],
-    ["7/30 금","Prague","Prague","0","블타바 1h 유람선 · 페트르시르 전망대","Prague"],
-    ["7/31 토","Prague","Český Krumlov","180","UNESCO 중세 마을 · 크롬로프 성과 탑","Český Krumlov"],
-    ["8/1 일","Český Krumlov","Hallstatt","148","체코 국도 → 오스트리아 B145 경치 좋은 길","Hallstatt"],
-    ["8/2 월","Hallstatt","Hallstatt","0","다흐슈타인 케이블카 → 빙하 5finger 전망대","Dachstein"],
-    ["8/3 화","Hallstatt","Salzburg","70","호엔잘츠부르크 케이블카 · 모차르트 생가","Salzburg"],
-    ["8/4 수","Salzburg","Salzburg","0","쾨니히스제 DT(독일) · 호수 유람선","Königssee"],
-    ["8/5 목","Salzburg","뮌헨","145","호텔 자체주차 · 글켄슈필 · 호프브로이하우스","Munich"],
-    ["8/6 금","뮌헨","MUC","40","10:00 체크아웃 · 풀충전 렌트 반납 · 면세","MUC Airport"]
-  ]
-};
+document.addEventListener('DOMContentLoaded', function() {
+  initNavigation();
+  initScrollAnimations();
+  buildScheduleTable();
+  buildDaySidebar();
+  initMap();
+});
 
-function buildMap(mapId,opt){
-  var m=L.map(mapId,{scrollWheelZoom:false,zoomControl:true});
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(m);
-  var routeLine=[];
-  opt.routeStops.forEach(function(city){
-    var pt=COORDS[city];if(pt)routeLine.push(pt);
+function initNavigation() {
+  const navLinks = document.querySelectorAll('.bottom-nav a');
+  const sections = ['hero', 'phases', 'map-section', 'tips', 'schedule'];
+  const tabMap = { 'home': 'hero', 'phases': 'phases', 'map': 'map-section', 'tips': 'tips', 'schedule': 'schedule' };
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = this.getAttribute('data-tab');
+      var sectionId = tabMap[targetId] || targetId;
+      var el = document.getElementById(sectionId);
+      if (el) {
+        var offset = targetId === 'home' ? 0 : 20;
+        var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+      navLinks.forEach(function(l) { l.classList.remove('active'); });
+      this.classList.add('active');
+    });
   });
-  L.polyline(routeLine,{color:opt.color,weight:3,opacity:.75,dashArray:"8,8"}).addTo(m);
-  opt.days.forEach(function(d,i){
-    var pt=COORDS[d[1]];if(!pt)return;
-    var isStart=(i===0),isEnd=(i===opt.days.length-1);
-    var cls="pin-num"+(isStart?" start":(isEnd?" end":""));
-    var html='<div class="'+cls+'">'+(i+1)+'</div>';
-    var icon=L.divIcon({html:html,className:'pin-wrap',iconSize:[26,26],iconAnchor:[13,13]});
-    var mk=L.marker(pt,{icon:icon});
-    var headColor=isStart?'#27ae60':(isEnd?'#e74c3c':'#1a5f7a');
-    mk.bindPopup('<div style="background:'+headColor+';color:#fff;padding:10px 14px;font-weight:700;font-size:.9rem;border-radius:8px 8px 0 0">'+d[0]+'</div><div style="padding:14px;font-size:.9rem;line-height:1.6;color:#2c3e50"><div style="font-weight:700;margin-bottom:6px;font-size:1rem">'+d[1]+' → '+d[2]+'</div><div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:700;color:#1a5f7a;margin-bottom:8px">'+d[3]+' km</div><div style="color:#7f8c8d">'+d[4]+'</div></div>');
-    mk.addTo(m);
-  });
-  var allBounds=opt.routeStops.map(function(c){return COORDS[c]}).filter(Boolean);
-  m.fitBounds(allBounds,{padding:[32,32]});
-  return{m:m,bounds:allBounds};
+
+  window.addEventListener('scroll', function() {
+    var scrollPos = window.scrollY + 100;
+    sections.forEach(function(id) {
+      var section = document.getElementById(id);
+      if (section) {
+        var top = section.offsetTop;
+        var bottom = top + section.offsetHeight;
+        if (scrollPos >= top && scrollPos < bottom) {
+          navLinks.forEach(function(l) { l.classList.remove('active'); });
+          var tab = id === 'hero' ? 'home' : id === 'map-section' ? 'map' : id;
+          var match = document.querySelector('[data-tab="' + tab + '"]');
+          if (match) match.classList.add('active');
+        }
+      }
+    });
+  }, { passive: true });
 }
 
-function buildDays(listId,opt,map){
-  var c=document.getElementById(listId);
-  c.innerHTML="";
-  opt.days.forEach(function(d,i){
-    var card=document.createElement("div");card.className="day-card";
-    var km=d[3]==="0"?"0":d[3];
-    card.innerHTML='<div class="day-card-top"><div class="day-card-num">'+(i+1)+'</div><div class="day-card-km">'+km+' km</div></div><div class="day-card-date">'+d[0]+'</div><div class="day-card-route">'+d[1]+' → '+d[2]+'</div><div class="day-card-desc">'+d[4]+'</div>';
-    card.onclick=function(){
-      var from=COORDS[d[1]],to=COORDS[d[2]];
-      if(from&&to){map.m.fitBounds([from,to],{padding:[60,60],maxZoom:11})}
-      document.querySelectorAll("#"+listId+" .day-card").forEach(function(x){x.classList.remove("active")});
-      card.classList.add("active");
-    };
-    c.appendChild(card);
+function initScrollAnimations() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+  document.querySelectorAll('.reveal, .timeline-item').forEach(function(el) {
+    observer.observe(el);
   });
 }
 
-var map1=buildMap("map1",OPT);
-buildDays("list1",OPT,map1);
-
-// Scroll Animation
-var observer=new IntersectionObserver(function(entries){
-  entries.forEach(function(entry){
-    if(entry.isIntersecting){entry.target.classList.add("visible")}
+function buildScheduleTable() {
+  var table = document.getElementById('scheduleTable');
+  var html = '<thead><tr><th>날짜</th><th>요일</th><th>출발</th><th>도착</th><th>거리</th><th>단계</th></tr></thead><tbody>';
+  var lastPhase = 0;
+  tripData.days.forEach(function(d) {
+    if (d.phase !== lastPhase) {
+      var p = tripData.phases[d.phase - 1];
+      html += '<tr class="phase-row"><td colspan="6" style="background:' + p.bg + '"><span style="color:' + p.color + '">단계 ' + p.num + '</span></td></tr>';
+      lastPhase = d.phase;
+    }
+    var p2 = tripData.phases[d.phase - 1];
+    html += '<tr><td>' + d.date + '</td><td>' + d.weekday + '</td><td>' + d.from + '</td><td>' + d.to + '</td><td>' + d.km + 'km</td><td style="color:' + p2.color + '">' + p2.num + '</td></tr>';
   });
-},{threshold:0.1});
-document.querySelectorAll(".animate-on-scroll").forEach(function(el){observer.observe(el)});
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function buildDaySidebar() {
+  var sidebar = document.getElementById('daySidebar');
+  var html = '';
+  tripData.days.forEach(function(d) {
+    var p = tripData.phases[d.phase - 1];
+    html += '<div class="day-card" data-day="' + d.day + '"><div class="day-card-num" style="background:' + p.bg + ';color:' + p.color + '">' + d.day + '</div><div class="day-card-info"><div class="day-card-date">' + d.date + ' (' + d.weekday + ')</div><div class="day-card-route">' + d.from + ' → ' + d.to + '</div></div><div class="day-card-km">' + d.km + 'km</div></div>';
+  });
+  sidebar.innerHTML = html;
+}
+
+function initMap() {
+  var c = tripData.coords;
+  var routePoints = tripData.route.map(function(key) { return c[key]; });
+
+  var map = L.map('map', { zoomControl: false }).setView([47.5, 13.5], 6);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 18
+  }).addTo(map);
+
+  L.polyline(routePoints, { color: '#f39c12', weight: 3, opacity: 0.8, dashArray: '8,6' }).addTo(map);
+
+  var phaseColors = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c', '#e74c3c', '#f39c12', '#e74c3c'];
+  for (var i = 0; i < routePoints.length - 1; i++) {
+    L.polyline([routePoints[i], routePoints[i + 1]], { color: phaseColors[i], weight: 3, opacity: 0.9 }).addTo(map);
+  }
+
+  var markerIcon = function(color) {
+    return L.divIcon({
+      className: '',
+      html: '<div style="width:28px;height:28px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:Inter,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4)">' + (i + 1) + '</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+  };
+
+  var cityNames = tripData.route;
+  for (var i = 0; i < routePoints.length; i++) {
+    var name = cityNames[i];
+    var color = phaseColors[i];
+    var icon = L.divIcon({
+      className: '',
+      html: '<div style="width:30px;height:30px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:Inter,sans-serif;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)">' + (i + 1) + '</div>',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+    L.marker(routePoints[i], { icon: icon }).addTo(map).bindPopup('<b>' + name + '</b><br>단계 ' + (i + 1));
+  }
+
+  map.fitBounds(L.latLngBounds(routePoints).pad(0.1));
+
+  var dayCards = document.querySelectorAll('.day-card');
+  dayCards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      var dayNum = parseInt(this.getAttribute('data-day'));
+      var dayData = tripData.days[dayNum - 1];
+      if (dayData) {
+        var toKey = dayData.to;
+        var coord = c[toKey];
+        if (coord) {
+          map.setView(coord, 10, { animate: true });
+          dayCards.forEach(function(c2) { c2.classList.remove('active'); });
+          this.classList.add('active');
+        }
+      }
+    });
+  });
+}
 </script>
 </body>
 </html>

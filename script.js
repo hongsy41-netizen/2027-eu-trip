@@ -405,6 +405,79 @@ function initMap(d) {
   });
 }
 
+/* ---- Budget ---- */
+function buildBudget(d) {
+  const b = d.budget;
+  let total = 0;
+  let confirmedTotal = 0;
+
+  let html = '<p style="margin-bottom:16px;color:var(--text-secondary);font-size:14px;">';
+  html += '항목별 금액을 직접 수정하면 총합이 실시간으로 갱신됩니다. ';
+  html += '<b style="color:var(--primary);">확정</b>된 항목은 녹색, <b style="color:var(--amber);">추정</b> 항목은 주황색으로 표시.';
+  html += '</p>';
+
+  html += '<table class="budget-table"><thead><tr>';
+  html += '<th>항목</th><th>금액 (원)</th><th>상태</th><th>비고</th>';
+  html += '</tr></thead><tbody>';
+
+  b.categories.forEach(cat => {
+    total += cat.amount;
+    if (cat.confirmed) confirmedTotal += cat.amount;
+
+    const statusBadge = cat.confirmed
+      ? '<span class="budget-status confirmed">확정</span>'
+      : '<span class="budget-status estimated">추정</span>';
+
+    html += '<tr class="budget-row' + (cat.confirmed ? ' is-confirmed' : '') + '">';
+    html += '<td class="budget-name"><span class="budget-icon">' + cat.icon + '</span> ' + cat.name + '</td>';
+    html += '<td class="budget-amount"><input type="number" class="budget-input" data-id="' + cat.id + '" value="' + cat.amount + '" min="0" step="10000" style="text-align:right;"></td>';
+    html += '<td class="budget-status-cell">' + statusBadge + '</td>';
+    html += '<td class="budget-note">' + cat.note + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody><tfoot>';
+  html += '<tr class="budget-subtotal"><td colspan="1">확정 합계</td><td id="budgetConfirmed" style="text-align:right;font-weight:700;color:var(--it);">' + confirmedTotal.toLocaleString() + '</td><td colspan="2"></td></tr>';
+  html += '<tr class="budget-total"><td colspan="1">총 예산</td><td id="budgetTotal" style="text-align:right;font-weight:800;font-size:18px;color:var(--primary);">' + total.toLocaleString() + '</td><td colspan="2"></td></tr>';
+  html += '</tfoot></table>';
+
+  html += '<div class="budget-summary" id="budgetSummary"></div>';
+
+  document.getElementById('budgetContent').innerHTML = html;
+
+  // Live total calculation
+  function updateTotal() {
+    let sum = 0;
+    let conf = 0;
+    b.categories.forEach(cat => {
+      const input = document.querySelector('.budget-input[data-id="' + cat.id + '"]');
+      if (input) {
+        const val = parseInt(input.value) || 0;
+        sum += val;
+        if (cat.confirmed) conf += val;
+      }
+    });
+    document.getElementById('budgetTotal').textContent = sum.toLocaleString();
+    document.getElementById('budgetConfirmed').textContent = conf.toLocaleString();
+
+    const perPerson = Math.round(sum / 5);
+    const perDay = Math.round(sum / 21);
+    document.getElementById('budgetSummary').innerHTML =
+      '<div class="budget-summary-grid">' +
+      '<div class="budget-summary-item"><span class="bs-num">₩' + sum.toLocaleString() + '</span><span class="bs-label">총 예산</span></div>' +
+      '<div class="budget-summary-item"><span class="bs-num">₩' + perPerson.toLocaleString() + '</span><span class="bs-label">인당 (5인)</span></div>' +
+      '<div class="budget-summary-item"><span class="bs-num">₩' + perDay.toLocaleString() + '</span><span class="bs-label">일평균 (21일)</span></div>' +
+      '<div class="budget-summary-item"><span class="bs-num">₩' + conf.toLocaleString() + '</span><span class="bs-label">확정 합계</span></div>' +
+      '</div>';
+  }
+
+  document.querySelectorAll('.budget-input').forEach(input => {
+    input.addEventListener('input', updateTotal);
+  });
+
+  updateTotal();
+}
+
 /* ---- Init ---- */
 document.addEventListener('DOMContentLoaded', async function () {
   const data = await loadData();
@@ -415,6 +488,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   buildScheduleTable(data);
   buildRental(data);
   buildAccommodations(data);
+  buildBudget(data);
   buildWarnings(data);
   buildTips(data);
   initMap(data);

@@ -139,6 +139,19 @@
     {"title":"베이징 환승","icon":"✈️","content":"환승 11h05m — 시내 나들이 가능(무비자 경유). 수하물은 체크쓰루로 BUD까지 직행. 여권 지참 + 임시입국허가 카드 작성."},
     {"title":"산악 주행","icon":"⛰️","content":"잘츠부르크→코르티나(~4h), 오르티세이→그라츠(~4h) — 알프스 산길. 비나 늦은 출발 시 5h+ 가능. 조기 출발 권장."}
   ],
+  "budget": {
+    "currency": "KRW",
+    "categories": [
+      { "id": "flights", "name": "항공권 (5인 왕복)", "icon": "✈️", "amount": 5000000, "confirmed": false, "note": "중국국제항공 CA138/719/720/137 · 추정값, 실제 발권가 입력" },
+      { "id": "rental", "name": "렌트카 (21일)", "icon": "🚐", "amount": 3124736, "confirmed": true, "note": "토요타 프로에이스 · BUD in/out · 확정" },
+      { "id": "accommodation", "name": "숙박 (19박)", "icon": "🏠", "amount": 3800000, "confirmed": false, "note": "에어비앤비 가족형 · ~₩200,000/박 추정" },
+      { "id": "fuel", "name": "유류", "icon": "⛽", "amount": 420000, "confirmed": false, "note": "~2,090km · 유럽 유가 ₩200/km 추정" },
+      { "id": "tolls", "name": "톨 & 비네트", "icon": "🛣️", "amount": 200000, "confirmed": false, "note": "AT 비네트 + CZ/HU 톨 + IT 자동차로" },
+      { "id": "food", "name": "식비 (21일)", "icon": "🍽️", "amount": 3150000, "confirmed": false, "note": "5인 × 21일 × ~₩30,000/일 추정" },
+      { "id": "activities", "name": "관광 & 액티비티", "icon": "🎟️", "amount": 1000000, "confirmed": false, "note": "케이블카·박물관·유람선·입장료" },
+      { "id": "misc", "name": "기타 (유심·보험 등)", "icon": "📋", "amount": 500000, "confirmed": false, "note": "유심·해외여행보험·간식·기념품" }
+    ]
+  },
   "warnings": [
     {"type":"warn","text":"1일차 피로 — 베이징 환승 + 밤샘 비행 직후 07:00 착륙 → 바로 2.5h 운전. 비엔나 도착 후 가벼운 일정만 권장."},
     {"type":"warn","text":"최장 산악주행 2구간 — ① 잘츠부르크→코르티나(~4h) ② 오르티세이→그라츠(~4h). 돌로미티 6박 배정으로 주행 부담 완화."},

@@ -105,13 +105,8 @@
     "freeCancel": "2027/7/15 08:00 이전 (현지시간)",
     "confirmation": "1시간 이내 확정",
     "payment": "온라인 선결제",
-    "totalPrice": "₩3,124,736",
-    "priceBreakdown": [
-      {"item":"선결제 렌터카 요금","amount":"₩2,450,182","note":"기본 요금"},
-      {"item":"슈페리어 업그레이드 보장","amount":"₩577,962","note":"₩27,522 × 21일 · 충돌/도난 대인·대물, 타이어·유리, 긴급출동, 휴차료, 새시·라이트"},
-      {"item":"차량 인수 시 결제","amount":"₩96,592","note":"무제한 주행거리 · 충돌/도난 보장 · 대인·대물 배상"},
-      {"item":"총 금액","amount":"₩3,124,736","note":"세금·수수료는 인수 시 계약에 따라 변동"}
-    ],
+    "totalPrice": "미정",
+    "priceBreakdown": [],
     "insuranceWarning": "보장이 기본 ₩8,049,325 미만만 커버. 슈페리어 보장으로 낮췄지만 사고 시 산악구간 접수 리스크. 자기부담금 0원(풀커버리지) 추가 여부 인수 시점 확인 권장.",
     "capacityWarning": "5인 + 23kg 수하물 5개 → 프로에이스급 적당. 3번째 열도 짐으로 쓰거나 길이 확보 확인. 국경 통행 수수료 별도인지 확인."
   },
@@ -143,7 +138,7 @@
     "currency": "KRW",
     "categories": [
       { "id": "flights", "name": "항공권 (5인 왕복)", "icon": "✈️", "amount": 5000000, "confirmed": false, "note": "중국국제항공 CA138/719/720/137 · 추정값, 실제 발권가 입력" },
-      { "id": "rental", "name": "렌트카 (21일)", "icon": "🚐", "amount": 3124736, "confirmed": true, "note": "토요타 프로에이스 · BUD in/out · 확정" },
+      { "id": "rental", "name": "렌트카 (21일)", "icon": "🚐", "amount": 0, "confirmed": false, "note": "토요타 프로에이스 · BUD in/out · 미정" },
       { "id": "accommodation", "name": "숙박 (19박)", "icon": "🏠", "amount": 3800000, "confirmed": false, "note": "에어비앤비 가족형 · ~₩200,000/박 추정" },
       { "id": "fuel", "name": "유류", "icon": "⛽", "amount": 420000, "confirmed": false, "note": "~2,090km · 유럽 유가 ₩200/km 추정" },
       { "id": "tolls", "name": "톨 & 비네트", "icon": "🛣️", "amount": 200000, "confirmed": false, "note": "AT 비네트 + CZ/HU 톨 + IT 자동차로" },

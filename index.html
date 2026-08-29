@@ -2,595 +2,85 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>2027 유럽 로드트립 플래너</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2027 유럽 여행 — 항공 &amp; 지상 동선</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--primary:#1a5f7a;--accent:#f39c12;--dark:#1a1a2e;--bg:#0f0f1a;--card:#1e1e32;--card-border:#2a2a40;--text:#e0e0e0;--text-muted:#8888aa;--success:#2ecc71;--danger:#e74c3c;--nav-height:64px;--safe-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'Noto Sans KR','Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent;overflow-x:hidden;padding-bottom:calc(var(--nav-height) + var(--safe-bottom))}
-a{color:inherit;text-decoration:none}
-img{max-width:100%}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--primary);border-radius:2px}
-
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-height) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(15,15,26,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;justify-content:space-around;align-items:center;z-index:1000}
-.bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:500;color:var(--text-muted);transition:color 0.3s;min-width:44px;min-height:44px;justify-content:center}
-.bottom-nav a.active{color:var(--accent)}
-.bottom-nav a i{font-size:20px}
-.bottom-nav a span{line-height:1}
-
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 20px 40px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);overflow:hidden}
-.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 70%,rgba(243,156,18,0.08) 0%,transparent 50%),radial-gradient(circle at 70% 30%,rgba(26,95,122,0.12) 0%,transparent 50%);animation:heroPulse 8s ease-in-out infinite alternate}
-@keyframes heroPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--accent);font-weight:600;width:fit-content;margin-bottom:16px}
-.hero-title{font-size:clamp(28px,7vw,48px);font-weight:900;line-height:1.15;margin-bottom:8px;background:linear-gradient(135deg,#ffffff 0%,#e0e0e0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-subtitle{font-size:15px;color:var(--text-muted);margin-bottom:28px;font-weight:400}
-.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
-.hero-stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center}
-.hero-stat-value{font-size:24px;font-weight:800;color:var(--accent);font-family:'Inter',sans-serif}
-.hero-stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
-.hero-route{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.hero-route-tag{background:rgba(26,95,122,0.2);border:1px solid rgba(26,95,122,0.3);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--primary);font-weight:600}
-.hero-route-arrow{color:var(--accent);font-size:12px}
-
-.section-header{padding:0 20px;margin-bottom:20px}
-.section-header h2{font-size:22px;font-weight:800;color:#fff}
-.section-header p{font-size:13px;color:var(--text-muted);margin-top:4px}
-
-#phases{padding:40px 0}
-.phases-scroll{display:flex;gap:14px;padding:0 20px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.phases-scroll::-webkit-scrollbar{display:none}
-.phase-card{min-width:280px;max-width:300px;scroll-snap-align:start;background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:20px;flex-shrink:0;transition:transform 0.3s}
-.phase-card:active{transform:scale(0.97)}
-.phase-card-number{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:13px;font-weight:800;font-family:'Inter',sans-serif;margin-bottom:10px}
-.phase-card-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
-.phase-card-dates{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px}
-.phase-card-route{font-size:13px;color:var(--text-muted);margin-bottom:12px}
-.phase-card-tags{display:flex;flex-wrap:wrap;gap:6px}
-.phase-tag{background:rgba(26,95,122,0.15);border:1px solid rgba(26,95,122,0.25);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--primary);font-weight:500}
-
-#stats{padding:40px 20px}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;text-align:center}
-.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px}
-.stat-value{font-size:20px;font-weight:800;color:#fff;font-family:'Inter',sans-serif}
-.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
-
-#timeline{padding:40px 0 40px 20px}
-.timeline-line{position:relative;padding-left:28px;border-left:2px solid var(--primary)}
-.timeline-item{position:relative;margin-bottom:28px;opacity:0;transform:translateX(-10px);transition:all 0.5s ease}
-.timeline-item.visible{opacity:1;transform:translateX(0)}
-.timeline-item::before{content:'';position:absolute;left:-35px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
-.timeline-date{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px}
-.timeline-title{font-size:15px;font-weight:700;color:#fff}
-.timeline-desc{font-size:13px;color:var(--text-muted);margin-top:4px}
-
-#map-section{padding:40px 0}
-.map-container{display:flex;flex-direction:column;gap:0}
-.map-wrapper{height:300px;border-radius:0;overflow:hidden;border:1px solid var(--card-border)}
-.day-sidebar{background:var(--card);max-height:250px;overflow-y:auto;padding:0}
-.day-card{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--card-border);cursor:pointer;transition:background 0.2s}
-.day-card:active,.day-card.active{background:rgba(243,156,18,0.1)}
-.day-card-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:'Inter',sans-serif;flex-shrink:0}
-.day-card-info{flex:1;min-width:0}
-.day-card-date{font-size:11px;color:var(--accent);font-weight:600}
-.day-card-route{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.day-card-km{font-size:11px;color:var(--text-muted)}
-
-#schedule{padding:40px 0}
-.schedule-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 20px}
-.schedule-table{width:100%;min-width:600px;border-collapse:collapse;font-size:13px}
-.schedule-table thead{position:sticky;top:0;z-index:2}
-.schedule-table th{background:var(--primary);color:#fff;padding:10px 8px;text-align:left;font-weight:600;font-size:12px;white-space:nowrap}
-.schedule-table th:first-child{border-radius:8px 0 0 0}
-.schedule-table th:last-child{border-radius:0 8px 0 0}
-.schedule-table td{padding:10px 8px;border-bottom:1px solid var(--card-border);white-space:nowrap;color:var(--text)}
-.schedule-table tr:hover td{background:rgba(26,95,122,0.1)}
-.schedule-table .phase-row{background:rgba(243,156,18,0.08);font-weight:700;color:var(--accent)}
-.schedule-table .phase-row td{padding:8px}
-
-#tips{padding:40px 20px}
-.tips-grid{display:flex;flex-direction:column;gap:12px}
-.tip-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:18px}
-.tip-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
-.tip-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
-.tip-content{font-size:13px;color:var(--text-muted);line-height:1.7}
-
-footer{padding:40px 20px calc(30px + var(--safe-bottom));text-align:center;border-top:1px solid var(--card-border)}
-footer p{font-size:12px;color:var(--text-muted)}
-
-.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
-
-@media(min-width:768px){
-  body{max-width:480px;margin:0 auto}
-  .bottom-nav{max-width:480px;left:50%;transform:translateX(-50%)}
-  .map-wrapper{height:400px}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<nav class="bottom-nav">
-  <a href="#hero" class="active" data-tab="home"><i class="fas fa-home"></i><span>홈</span></a>
-  <a href="#phases" data-tab="phases"><i class="fas fa-route"></i><span>일정</span></a>
-  <a href="#map-section" data-tab="map"><i class="fas fa-map-marked-alt"></i><span>지도</span></a>
-  <a href="#tips" data-tab="tips"><i class="fas fa-lightbulb"></i><span>팁</span></a>
-  <a href="#schedule" data-tab="schedule"><i class="fas fa-table"></i><span>일정표</span></a>
-</nav>
+<header class="hero">
+  <div class="container">
+    <h1 id="heroTitle">2027 유럽 여행 — 항공 &amp; 지상 동선</h1>
+    <p class="subtitle" id="heroSubtitle">부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프</p>
+    <div class="hero-stats" id="heroStats"></div>
+    <div class="route-summary" id="routeSummary"></div>
+  </div>
+</header>
 
-<section class="hero" id="hero">
-  <div class="hero-badge"><i class="fas fa-plane"></i> 2027년 유럽 로드트립</div>
-  <h1 class="hero-title">유럽 5개국<br>자유여행</h1>
-  <p class="hero-subtitle">뮌헨 출발 완전한 도로 여행 · 2027.07.17 - 08.06</p>
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="hero-stat-value">21</div><div class="hero-stat-label">일간 여행</div></div>
-    <div class="hero-stat"><div class="hero-stat-value">5</div><div class="hero-stat-label">개국 방문</div></div>
-    <div class="hero-stat"><div class="hero-stat-value">2,374</div><div class="hero-stat-label">km 주행</div></div>
-    <div class="hero-stat"><div class="hero-stat-value">9</div><div class="hero-stat-label">단계 코스</div></div>
-  </div>
-  <div class="hero-route">
-    <span class="hero-route-tag">🇩🇪 뮌헨</span>
-    <i class="fas fa-arrow-right hero-route-arrow"></i>
-    <span class="hero-route-tag">🇮🇹 이탈리아</span>
-    <i class="fas fa-arrow-right hero-route-arrow"></i>
-    <span class="hero-route-tag">🇦🇹 오스트리아</span>
-    <i class="fas fa-arrow-right hero-route-arrow"></i>
-    <span class="hero-route-tag">🇭🇺 헝가리</span>
-    <i class="fas fa-arrow-right hero-route-arrow"></i>
-    <span class="hero-route-tag">🇨🇿 체코</span>
-    <i class="fas fa-arrow-right hero-route-arrow"></i>
-    <span class="hero-route-tag">🇩🇪 뮌헨</span>
-  </div>
-</section>
+<main class="container">
 
-<section id="phases">
-  <div class="section-header reveal"><h2>여정 단계</h2><p>9단계 로드트립 코스</p></div>
-  <div class="phases-scroll" id="phasesScroll">
-    <div class="phase-card" style="--pc:#e74c3c">
-      <div class="phase-card-number" style="background:rgba(231,76,60,0.2);color:#e74c3c">1</div>
-      <div class="phase-card-title">뮌헨 → 코르티나</div>
-      <div class="phase-card-dates">7/17 - 7/20 · 3박</div>
-      <div class="phase-card-route"> 이탈리아 돌로미티</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">트레 치메</span>
-        <span class="phase-tag">미수리나</span>
-        <span class="phase-tag">브라이에스</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#e67e22">
-      <div class="phase-card-number" style="background:rgba(230,126,34,0.2);color:#e67e22">2</div>
-      <div class="phase-card-title">코르티나 → 오르티세이</div>
-      <div class="phase-card-dates">7/21 - 7/22 · 2박</div>
-      <div class="phase-card-route">발 가르디나</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">세체다</span>
-        <span class="phase-tag">젤라 론다</span>
-        <span class="phase-tag">가르데나 패스</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#f39c12">
-      <div class="phase-card-number" style="background:rgba(243,156,18,0.2);color:#f39c12">3</div>
-      <div class="phase-card-title">오르티세이 → 그라츠</div>
-      <div class="phase-card-dates">7/23 · 1박 · 400km</div>
-      <div class="phase-card-route">오스트리아 국경 횡단</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">비네트</span>
-        <span class="phase-tag">장거리 이동</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#2ecc71">
-      <div class="phase-card-number" style="background:rgba(46,204,113,0.2);color:#2ecc71">4</div>
-      <div class="phase-card-title">그라츠 → 부다페스트</div>
-      <div class="phase-card-dates">7/24 - 7/25 · 2박</div>
-      <div class="phase-card-route">헝가리 수도</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">다뉴브 야경</span>
-        <span class="phase-tag">부다 성</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#3498db">
-      <div class="phase-card-number" style="background:rgba(52,152,219,0.2);color:#3498db">5</div>
-      <div class="phase-card-title">부다페스트 → 빈</div>
-      <div class="phase-card-dates">7/26 - 7/27 · 2박</div>
-      <div class="phase-card-route">오스트리아 수도</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">쇤브룬</span>
-        <span class="phase-tag">자허르토르테</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#9b59b6">
-      <div class="phase-card-number" style="background:rgba(155,89,182,0.2);color:#9b59b6">6</div>
-      <div class="phase-card-title">빈 → 프라하</div>
-      <div class="phase-card-dates">7/28 - 7/30 · 3박</div>
-      <div class="phase-card-route">체코 수도</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">천문시계</span>
-        <span class="phase-tag">카를교</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#1abc9c">
-      <div class="phase-card-number" style="background:rgba(26,188,156,0.2);color:#1abc9c">7</div>
-      <div class="phase-card-title">프라하 → 체스키크루모프 → 할슈타트</div>
-      <div class="phase-card-dates">7/31 - 8/2 · 2박</div>
-      <div class="phase-card-route">오스트리아 호수마을</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">체스키크루모프</span>
-        <span class="phase-tag">할슈타트</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#e74c3c">
-      <div class="phase-card-number" style="background:rgba(231,76,60,0.2);color:#e74c3c">8</div>
-      <div class="phase-card-title">할슈타트 → 잘츠부르크</div>
-      <div class="phase-card-dates">8/3 - 8/4 · 2박</div>
-      <div class="phase-card-route">모차르트의 도시</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">독수리 둥지</span>
-        <span class="phase-tag">잘츠부르크 성</span>
-      </div>
-    </div>
-    <div class="phase-card" style="--pc:#f39c12">
-      <div class="phase-card-number" style="background:rgba(243,156,18,0.2);color:#f39c12">9</div>
-      <div class="phase-card-title">잘츠부르크 → 뮌헨 → MUC</div>
-      <div class="phase-card-dates">8/5 - 8/6 · 1박</div>
-      <div class="phase-card-route">귀국</div>
-      <div class="phase-card-tags">
-        <span class="phase-tag">뮌헨 경유</span>
-        <span class="phase-tag">LH718</span>
-      </div>
-    </div>
-  </div>
-</section>
+  <section id="flights">
+    <h2 class="section-title">✈ 항공 일정 (최종 확정)</h2>
+    <div class="card" id="flightContent"></div>
+  </section>
 
-<section id="stats">
-  <div class="section-header reveal"><h2>여행 통계</h2><p>상세 기록</p></div>
-  <div class="stats-grid">
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-calendar-days"></i></div>
-      <div class="stat-value">21</div>
-      <div class="stat-label">총 일수</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-car"></i></div>
-      <div class="stat-value">2,374</div>
-      <div class="stat-label">총 주행 거리 (km)</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(52,152,219,0.15);color:#3498db"><i class="fas fa-map-location-dot"></i></div>
-      <div class="stat-value">5</div>
-      <div class="stat-label">방문 국가</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(155,89,182,0.15);color:#9b59b6"><i class="fas fa-hotel"></i></div>
-      <div class="stat-value">17</div>
-      <div class="stat-label">숙박 호텔</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-plane-departure"></i></div>
-      <div class="stat-value">LH719</div>
-      <div class="stat-label">출발 항공편</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(26,188,156,0.15);color:#1abc9c"><i class="fas fa-plane-arrival"></i></div>
-      <div class="stat-value">LH718</div>
-      <div class="stat-label">귀국 항공편</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-mountain"></i></div>
-      <div class="stat-value">9</div>
-      <div class="stat-label">여정 단계</div>
-    </div>
-    <div class="stat-card reveal">
-      <div class="stat-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-route"></i></div>
-      <div class="stat-value">7/17-8/6</div>
-      <div class="stat-label">여행 기간</div>
-    </div>
-  </div>
-</section>
+  <section id="phases">
+    <h2 class="section-title">여정 단계 (9구간)</h2>
+    <div class="phase-grid" id="phaseGrid"></div>
+  </section>
 
-<section id="timeline">
-  <div class="section-header reveal"><h2>타임라인</h2><p>날짜별 일정 흐름</p></div>
-  <div class="timeline-line">
-    <div class="timeline-item"><div class="timeline-date">7월 17일 (토)</div><div class="timeline-title">뮌헨 도착</div><div class="timeline-desc">LH719 · 뮌헨 공항 도착 → 렌터카 수령 → 첫 숙소</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 18일 (일)</div><div class="timeline-title">코르티나 이동</div><div class="timeline-desc">뮌헨 → 코르티나 디	AM페초 · 돌로미티 입성</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 19일 (월)</div><div class="timeline-title">트레 치메</div><div class="timeline-desc">트레 치메 데 비가探 · 미수리나 호수</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 20일 (화)</div><div class="timeline-title">브라이에스 호수</div><div class="timeline-desc">라고 디 브라이에스 · 푸르비아 호수</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 21일 (수)</div><div class="timeline-title">오르티세이 이동</div><div class="timeline-desc">코르티나 → 오르티세이 · 세체다 케이블카</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 22일 (목)</div><div class="timeline-title">젤라 론다</div><div class="timeline-desc">젤라 론다 드라이브 · 가르데나 패스</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 23일 (금)</div><div class="timeline-title">그라츠 이동</div><div class="timeline-desc">오르티세이 → 그라츠 · 400km · 비네트 구매</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 24일 (토)</div><div class="timeline-title">부다페스트 도착</div><div class="timeline-desc">그라츠 → 부다페스트 · 다뉴브강 야경</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 25일 (일)</div><div class="timeline-title">부다 성</div><div class="timeline-desc">부다 성 탐방 · 어부의 요새 · 매틀레 시장</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 26일 (월)</div><div class="timeline-title">빈 이동</div><div class="timeline-desc">부다페스트 → 빈</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 27일 (화)</div><div class="timeline-title">쇤브룬 궁전</div><div class="timeline-desc">쇤브룬 궁전 · 자허르토르테 맛보기</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 28일 (수)</div><div class="timeline-title">프라하 이동</div><div class="timeline-desc">빈 → 프라하</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 29일 (목)</div><div class="timeline-title">프라하 탐방</div><div class="timeline-desc">천문시계 · 카를교 · 구시가지 광장</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 30일 (금)</div><div class="timeline-title">프라하 자유시간</div><div class="timeline-desc">프라하 성 · 요새 탐방</div></div>
-    <div class="timeline-item"><div class="timeline-date">7월 31일 (토)</div><div class="timeline-title">체스키크루모프</div><div class="timeline-desc">프라하 → 체스키크루모프 · 성城堡 탐방</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 1일 (일)</div><div class="timeline-title">할슈타트 이동</div><div class="timeline-desc">체스키크루모프 → 할슈타트</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 2일 (월)</div><div class="timeline-title">할슈타트 탐방</div><div class="timeline-desc">할슈타트 호수 · 소금 광산</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 3일 (화)</div><div class="timeline-title">잘츠부르크 이동</div><div class="timeline-desc">할슈타트 → 잘츠부르크</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 4일 (수)</div><div class="timeline-title">독수리 둥지</div><div class="timeline-desc">독수리 둥지(Obersalzberg) · 잘츠부르크 성</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 5일 (목)</div><div class="timeline-title">뮌헨 이동</div><div class="timeline-desc">잘츠부르크 → 뮌헨</div></div>
-    <div class="timeline-item"><div class="timeline-date">8월 6일 (금)</div><div class="timeline-title">귀국</div><div class="timeline-desc">LH718 · 뮌헨 공항 출발</div></div>
-  </div>
-</section>
+  <section id="timeline">
+    <h2 class="section-title">타임라인 (날짜별 일정)</h2>
+    <div class="card">
+      <div class="timeline" id="timelineList"></div>
+    </div>
+  </section>
 
-<section id="map-section">
-  <div class="section-header reveal"><h2>지도</h2><p>전체 경로 및 일일 장소</p></div>
-  <div class="map-container">
-    <div class="map-wrapper" id="map"></div>
-    <div class="day-sidebar" id="daySidebar"></div>
-  </div>
-</section>
+  <section id="map-section">
+    <h2 class="section-title">동선 지도 &amp; Day by Day</h2>
+    <div class="map-layout">
+      <div id="map"></div>
+      <div id="daySidebar"></div>
+    </div>
+  </section>
 
-<section id="schedule">
-  <div class="section-header reveal"><h2>상세 일정표</h2><p>21일 전체 일정</p></div>
-  <div class="schedule-table-wrap">
-    <table class="schedule-table" id="scheduleTable"></table>
-  </div>
-</section>
+  <section id="schedule">
+    <h2 class="section-title">상세 일정표 (20일)</h2>
+    <div class="table-wrap">
+      <table id="scheduleTable"></table>
+    </div>
+  </section>
 
-<section id="tips">
-  <div class="section-header reveal"><h2>여행 팁</h2><p>유용한 정보</p></div>
-  <div class="tips-grid">
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-car"></i></div>
-      <div class="tip-title">렌터카</div>
-      <div class="tip-content">뮌헨 공항에서 렌터카 수령. 자동변속기 SUV 추천. 유럽용 내비 필수. 주차는 대부분 유료.</div>
+  <section id="rental">
+    <h2 class="section-title">렌트카 (예약 정보)</h2>
+    <div class="card" id="rentalContent"></div>
+  </section>
+
+  <section id="accommodations">
+    <h2 class="section-title">숙소 (가족형 · 에어비앤비 권장)</h2>
+    <div class="table-wrap">
+      <table id="accommodationTable"></table>
     </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(26,95,122,0.15);color:var(--primary)"><i class="fas fa-gas-pump"></i></div>
-      <div class="tip-title">연료 & 톨게이트</div>
-      <div class="tip-content">독일 고속도로 무료. 오스트리아 비네트(€9.90/10일) 필수. 헝가리 M5 고속도로 유료. 이탈리아 톨비 높음.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c"><i class="fas fa-sim-card"></i></div>
-      <div class="tip-title">유심 & 통신</div>
-      <div class="tip-content">EU roaming. 한국에서 유심 구매 또는 현지에서买. 5개국 커버리지 확인.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-euro-sign"></i></div>
-      <div class="tip-title">화폐 & 결제</div>
-      <div class="tip-content">모든国家 유로화 사용. 체코만 코루나. 신용카드 대부분 가능. 현금도 준비.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(155,89,182,0.15);color:#9b59b6"><i class="fas fa-temperature-high"></i></div>
-      <div class="tip-title">날씨 & 복장</div>
-      <div class="tip-content">7-8월 평균 25-30도. 산악지대는 쌀쌀. 겉옷 필수. 자외선 차단 필수.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(243,156,18,0.15);color:#f39c12"><i class="fas fa-utensils"></i></div>
-      <div class="tip-title">식사 & 음료</div>
-      <div class="tip-content">오스트리아: 비너 슈니첼, 자허르토르테. 헝가리: 굴라시. 체코: 트로클로비 체키치. 이탈리아: 파스타, 피자.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(26,95,122,0.15);color:var(--primary)"><i class="fas fa-language"></i></div>
-      <div class="tip-title">언어</div>
-      <div class="tip-content">독일어, 이탈리아어, 헝가리어, 체코어. 영어 관광지에서 통용. 기본 인사 필수.</div>
-    </div>
-    <div class="tip-card reveal">
-      <div class="tip-icon" style="background:rgba(46,204,113,0.15);color:#2ecc71"><i class="fas fa-shield-halved"></i></div>
-      <div class="tip-title">보험 & 안전</div>
-      <div class="tip-content">해외여행보험 필수. 유럽 의료비 비쌈. 도난 주의. 주요 문서 백업.</div>
-    </div>
-  </div>
-</section>
+  </section>
+
+  <div id="warnings"></div>
+
+  <section id="tips">
+    <h2 class="section-title">실전 팁</h2>
+    <div class="tips-grid" id="tipsGrid"></div>
+  </section>
+
+</main>
 
 <footer>
-  <p>2027 유럽 로드트립 플래너 · 뮌헨 IN/OUT · 21일</p>
-  <p style="margin-top:6px;font-size:11px">LH719 → LH718 · 2027.07.17 - 08.06</p>
+  <p id="footerText">2027 유럽 여행 정리 · 항공(중국국제항공)·렌트카(토요타 프로에이스) 확정 기준 · 숙소는 가족형 권장안</p>
 </footer>
 
-<script>
-const tripData = {
-  days: [
-    { day: 1, date: '7/17', weekday: '토', from: '뮌헨 공항', to: '코르티나', km: 350, phase: 1 },
-    { day: 2, date: '7/18', weekday: '일', from: '코르티나', to: '트레 치메', km: 30, phase: 1 },
-    { day: 3, date: '7/19', weekday: '월', from: '코르티나', to: '미수리나', km: 15, phase: 1 },
-    { day: 4, date: '7/20', weekday: '화', from: '코르티나', to: '브라이에스', km: 45, phase: 1 },
-    { day: 5, date: '7/21', weekday: '수', from: '코르티나', to: '오르티세이', km: 110, phase: 2 },
-    { day: 6, date: '7/22', weekday: '목', from: '오르티세이', to: '가르데나 패스', km: 60, phase: 2 },
-    { day: 7, date: '7/23', weekday: '금', from: '오르티세이', to: '그라츠', km: 400, phase: 3 },
-    { day: 8, date: '7/24', weekday: '토', from: '그라츠', to: '부다페스트', km: 280, phase: 4 },
-    { day: 9, date: '7/25', weekday: '일', from: '부다페스트', to: '부다페스트', km: 20, phase: 4 },
-    { day: 10, date: '7/26', weekday: '월', from: '부다페스트', to: '빈', km: 240, phase: 5 },
-    { day: 11, date: '7/27', weekday: '화', from: '빈', to: '빈', km: 20, phase: 5 },
-    { day: 12, date: '7/28', weekday: '수', from: '빈', to: '프라하', km: 330, phase: 6 },
-    { day: 13, date: '7/29', weekday: '목', from: '프라하', to: '프라하', km: 15, phase: 6 },
-    { day: 14, date: '7/30', weekday: '금', from: '프라하', to: '프라하', km: 15, phase: 6 },
-    { day: 15, date: '7/31', weekday: '토', from: '프라하', to: '체스키크루모프', km: 170, phase: 7 },
-    { day: 16, date: '8/1', weekday: '일', from: '체스키크루모프', to: '할슈타트', km: 200, phase: 7 },
-    { day: 17, date: '8/2', weekday: '월', from: '할슈타트', to: '할슈타트', km: 10, phase: 7 },
-    { day: 18, date: '8/3', weekday: '화', from: '할슈타트', to: '잘츠부르크', km: 75, phase: 8 },
-    { day: 19, date: '8/4', weekday: '수', from: '잘츠부르크', to: '독수리 둥지', km: 30, phase: 8 },
-    { day: 20, date: '8/5', weekday: '목', from: '잘츠부르크', to: '뮌헨', km: 145, phase: 9 },
-    { day: 21, date: '8/6', weekday: '금', from: '뮌헨', to: 'MUC 공항', km: 35, phase: 9 }
-  ],
-  phases: [
-    { num: 1, color: '#e74c3c', bg: 'rgba(231,76,60,0.12)' },
-    { num: 2, color: '#e67e22', bg: 'rgba(230,126,34,0.12)' },
-    { num: 3, color: '#f39c12', bg: 'rgba(243,156,18,0.12)' },
-    { num: 4, color: '#2ecc71', bg: 'rgba(46,204,113,0.12)' },
-    { num: 5, color: '#3498db', bg: 'rgba(52,152,219,0.12)' },
-    { num: 6, color: '#9b59b6', bg: 'rgba(155,89,182,0.12)' },
-    { num: 7, color: '#1abc9c', bg: 'rgba(26,188,156,0.12)' },
-    { num: 8, color: '#e74c3c', bg: 'rgba(231,76,60,0.12)' },
-    { num: 9, color: '#f39c12', bg: 'rgba(243,156,18,0.12)' }
-  ],
-  coords: {
-    'MUC': [48.3536407, 11.7831852],
-    '뮌헨': [48.1351, 11.5820],
-    'Cortina': [46.5378431, 12.1358821],
-    'Ortisei': [46.5753618, 11.6702281],
-    'Graz': [47.0678961, 15.4417305],
-    'Budapest': [47.497912, 19.040235],
-    'Vienna': [48.2080696, 16.3713095],
-    'Prague': [50.0755381, 14.4378005],
-    'Český Krumlov': [48.8127354, 14.3174657],
-    'Hallstatt': [47.5622342, 13.6492617],
-    'Salzburg': [47.8014154, 13.0448441]
-  },
-  route: ['MUC', 'Cortina', 'Ortisei', 'Graz', 'Budapest', 'Vienna', 'Prague', 'Český Krumlov', 'Hallstatt', 'Salzburg', 'MUC']
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  initNavigation();
-  initScrollAnimations();
-  buildScheduleTable();
-  buildDaySidebar();
-  initMap();
-});
-
-function initNavigation() {
-  const navLinks = document.querySelectorAll('.bottom-nav a');
-  const sections = ['hero', 'phases', 'map-section', 'tips', 'schedule'];
-  const tabMap = { 'home': 'hero', 'phases': 'phases', 'map': 'map-section', 'tips': 'tips', 'schedule': 'schedule' };
-
-  navLinks.forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      var targetId = this.getAttribute('data-tab');
-      var sectionId = tabMap[targetId] || targetId;
-      var el = document.getElementById(sectionId);
-      if (el) {
-        var offset = targetId === 'home' ? 0 : 20;
-        var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
-      navLinks.forEach(function(l) { l.classList.remove('active'); });
-      this.classList.add('active');
-    });
-  });
-
-  window.addEventListener('scroll', function() {
-    var scrollPos = window.scrollY + 100;
-    sections.forEach(function(id) {
-      var section = document.getElementById(id);
-      if (section) {
-        var top = section.offsetTop;
-        var bottom = top + section.offsetHeight;
-        if (scrollPos >= top && scrollPos < bottom) {
-          navLinks.forEach(function(l) { l.classList.remove('active'); });
-          var tab = id === 'hero' ? 'home' : id === 'map-section' ? 'map' : id;
-          var match = document.querySelector('[data-tab="' + tab + '"]');
-          if (match) match.classList.add('active');
-        }
-      }
-    });
-  }, { passive: true });
-}
-
-function initScrollAnimations() {
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
-
-  document.querySelectorAll('.reveal, .timeline-item').forEach(function(el) {
-    observer.observe(el);
-  });
-}
-
-function buildScheduleTable() {
-  var table = document.getElementById('scheduleTable');
-  var html = '<thead><tr><th>날짜</th><th>요일</th><th>출발</th><th>도착</th><th>거리</th><th>단계</th></tr></thead><tbody>';
-  var lastPhase = 0;
-  tripData.days.forEach(function(d) {
-    if (d.phase !== lastPhase) {
-      var p = tripData.phases[d.phase - 1];
-      html += '<tr class="phase-row"><td colspan="6" style="background:' + p.bg + '"><span style="color:' + p.color + '">단계 ' + p.num + '</span></td></tr>';
-      lastPhase = d.phase;
-    }
-    var p2 = tripData.phases[d.phase - 1];
-    html += '<tr><td>' + d.date + '</td><td>' + d.weekday + '</td><td>' + d.from + '</td><td>' + d.to + '</td><td>' + d.km + 'km</td><td style="color:' + p2.color + '">' + p2.num + '</td></tr>';
-  });
-  html += '</tbody>';
-  table.innerHTML = html;
-}
-
-function buildDaySidebar() {
-  var sidebar = document.getElementById('daySidebar');
-  var html = '';
-  tripData.days.forEach(function(d) {
-    var p = tripData.phases[d.phase - 1];
-    html += '<div class="day-card" data-day="' + d.day + '"><div class="day-card-num" style="background:' + p.bg + ';color:' + p.color + '">' + d.day + '</div><div class="day-card-info"><div class="day-card-date">' + d.date + ' (' + d.weekday + ')</div><div class="day-card-route">' + d.from + ' → ' + d.to + '</div></div><div class="day-card-km">' + d.km + 'km</div></div>';
-  });
-  sidebar.innerHTML = html;
-}
-
-function initMap() {
-  var c = tripData.coords;
-  var routePoints = tripData.route.map(function(key) { return c[key]; });
-
-  var map = L.map('map', { zoomControl: false }).setView([47.5, 13.5], 6);
-  L.control.zoom({ position: 'topright' }).addTo(map);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 18
-  }).addTo(map);
-
-  L.polyline(routePoints, { color: '#f39c12', weight: 3, opacity: 0.8, dashArray: '8,6' }).addTo(map);
-
-  var phaseColors = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c', '#e74c3c', '#f39c12', '#e74c3c'];
-  for (var i = 0; i < routePoints.length - 1; i++) {
-    L.polyline([routePoints[i], routePoints[i + 1]], { color: phaseColors[i], weight: 3, opacity: 0.9 }).addTo(map);
-  }
-
-  var markerIcon = function(color) {
-    return L.divIcon({
-      className: '',
-      html: '<div style="width:28px;height:28px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:Inter,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4)">' + (i + 1) + '</div>',
-      iconSize: [28, 28],
-      iconAnchor: [14, 14]
-    });
-  };
-
-  var cityNames = tripData.route;
-  for (var i = 0; i < routePoints.length; i++) {
-    var name = cityNames[i];
-    var color = phaseColors[i];
-    var icon = L.divIcon({
-      className: '',
-      html: '<div style="width:30px;height:30px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:Inter,sans-serif;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)">' + (i + 1) + '</div>',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-    L.marker(routePoints[i], { icon: icon }).addTo(map).bindPopup('<b>' + name + '</b><br>단계 ' + (i + 1));
-  }
-
-  map.fitBounds(L.latLngBounds(routePoints).pad(0.1));
-
-  var dayCards = document.querySelectorAll('.day-card');
-  dayCards.forEach(function(card) {
-    card.addEventListener('click', function() {
-      var dayNum = parseInt(this.getAttribute('data-day'));
-      var dayData = tripData.days[dayNum - 1];
-      if (dayData) {
-        var toKey = dayData.to;
-        var coord = c[toKey];
-        if (coord) {
-          map.setView(coord, 10, { animate: true });
-          dayCards.forEach(function(c2) { c2.classList.remove('active'); });
-          this.classList.add('active');
-        }
-      }
-    });
-  });
-}
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

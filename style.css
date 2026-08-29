@@ -582,6 +582,108 @@ td:first-child {
   }
 }
 
+/* Edit Controls */
+.edit-controls {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.edit-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+.edit-btn.editing {
+  background: var(--it);
+  border-color: var(--it);
+  color: #fff;
+}
+.edit-btn-reset {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+.edit-btn-reset:hover {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: #fff;
+}
+
+/* Edit mode table inputs */
+.edit-row td {
+  padding: 4px 3px;
+}
+.edit-input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #fff;
+}
+.edit-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+body.editing-on .phase-sep {
+  display: none;
+}
+
+/* Phase separator styling (replaces inline) */
+.phase-sep td {
+  background: var(--primary-light);
+}
+.sum-row td {
+  background: #edf2f8;
+  font-weight: 700;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast-info {
+  background: var(--primary);
+}
+.toast-success {
+  background: var(--it);
+}
+.toast-error {
+  background: var(--warn);
+}
+
 /* Footer */
 footer {
   text-align: center;

@@ -121,6 +121,19 @@ const FALLBACK_DATA = {
     { "title": "베이징 환승", "icon": "✈️", "content": "환승 11h05m — 시내 나들이 가능(무비자 경유). 수하물은 체크쓰루로 BUD까지 직행. 여권 지참 + 임시입국허가 카드 작성." },
     { "title": "산악 주행", "icon": "⛰️", "content": "잘츠부르크→코르티나(~4h), 오르티세이→그라츠(~4h) — 알프스 산길. 비나 늦은 출발 시 5h+ 가능. 조기 출발 권장." }
   ],
+  "budget": {
+    "currency": "KRW",
+    "categories": [
+      { "id": "flights", "name": "항공권 (5인 왕복)", "icon": "✈️", "amount": 5000000, "confirmed": false, "note": "중국국제항공 CA138/719/720/137 · 추정값, 실제 발권가 입력" },
+      { "id": "rental", "name": "렌트카 (21일)", "icon": "🚐", "amount": 3124736, "confirmed": true, "note": "토요타 프로에이스 · BUD in/out · 확정" },
+      { "id": "accommodation", "name": "숙박 (19박)", "icon": "🏠", "amount": 3800000, "confirmed": false, "note": "에어비앤비 가족형 · ~₩200,000/박 추정" },
+      { "id": "fuel", "name": "유류", "icon": "⛽", "amount": 420000, "confirmed": false, "note": "~2,090km · 유럽 유가 ₩200/km 추정" },
+      { "id": "tolls", "name": "톨 & 비네트", "icon": "🛣️", "amount": 200000, "confirmed": false, "note": "AT 비네트 + CZ/HU 톨 + IT 자동차로" },
+      { "id": "food", "name": "식비 (21일)", "icon": "🍽️", "amount": 3150000, "confirmed": false, "note": "5인 × 21일 × ~₩30,000/일 추정" },
+      { "id": "activities", "name": "관광 & 액티비티", "icon": "🎟️", "amount": 1000000, "confirmed": false, "note": "케이블카·박물관·유람선·입장료" },
+      { "id": "misc", "name": "기타 (유심·보험 등)", "icon": "📋", "amount": 500000, "confirmed": false, "note": "유심·해외여행보험·간식·기념품" }
+    ]
+  },
   "warnings": [
     { "type": "warn", "text": "1일차 피로 — 베이징 환승 + 밤샘 비행 직후 07:00 착륙 → 바로 2.5h 운전. 비엔나 도착 후 가벼운 일정만 권장." },
     { "type": "warn", "text": "최장 산악주행 2구간 — ① 잘츠부르크→코르티나(~4h) ② 오르티세이→그라츠(~4h). 돌로미티 6박 배정으로 주행 부담 완화." },
@@ -129,7 +142,19 @@ const FALLBACK_DATA = {
 };
 
 /* ---- Data Loading ---- */
+const STORAGE_KEY = 'euTrip2027_v1';
+let TRIP_DATA = null; // global ref for edit mode
+
 async function loadData() {
+  // 1. Check localStorage for saved edits
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.days && parsed.budget) return parsed;
+    } catch (e) { /* ignore corrupt */ }
+  }
+  // 2. Fetch from server (GitHub Pages) or fallback
   try {
     const res = await fetch('data/trips.json');
     if (!res.ok) throw new Error('fetch failed: ' + res.status);
@@ -138,6 +163,33 @@ async function loadData() {
     console.warn('[trips] fetch 실패, 내장 데이터 사용. HTTP 서버 권장 (예: python -m http.server)');
     return FALLBACK_DATA;
   }
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    console.error('[trips] 저장 실패:', e);
+    return false;
+  }
+}
+
+function resetData() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/* ---- Toast notification ---- */
+function showToast(msg, type) {
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + (type || 'info');
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function () { toast.classList.add('show'); }, 10);
+  setTimeout(function () {
+    toast.classList.remove('show');
+    setTimeout(function () { toast.remove(); }, 300);
+  }, 2500);
 }
 
 /* ---- Helpers ---- */
@@ -249,24 +301,45 @@ function buildTimeline(d) {
 }
 
 /* ---- Schedule Table ---- */
+let EDIT_MODE = false;
+
 function buildScheduleTable(d) {
   let html = '<thead><tr><th>Day</th><th>날짜</th><th>요일</th><th>출발</th><th>도착</th><th>거리</th><th>숙박</th><th>국가</th><th>비고</th></tr></thead><tbody>';
   let lastPhase = 0;
   let totalKm = 0;
 
-  d.days.forEach(day => {
+  d.days.forEach(function (day, idx) {
     // Phase separator
     const phase = d.phases[day.day <= 2 ? 0 : day.day <= 4 ? 1 : day.day === 5 ? 2 : day.day <= 7 ? 3 : day.day <= 9 ? 4 : day.day <= 12 ? 5 : day.day <= 15 ? 6 : day.day === 16 ? 7 : 8];
     if (phase && phase.num !== lastPhase) {
-      html += '<tr style="background:' + 'var(--primary-light)"><td colspan="9"><b>PHASE ' + phase.num + ' · ' + phase.title + '</b></td></tr>';
+      html += '<tr class="phase-sep"><td colspan="9"><b>PHASE ' + phase.num + ' · ' + phase.title + '</b></td></tr>';
       lastPhase = phase.num;
     }
     const km = parseInt(day.km) || 0;
     totalKm += km;
-    html += '<tr><td>' + day.day + '</td><td>' + day.date + '</td><td>' + day.weekday + '</td><td>' + day.from + '</td><td>' + day.to + '</td><td>' + (km > 0 ? km + 'km' : '—') + '</td><td>' + day.nights + '</td><td>' + badge(day.country) + '</td><td style="text-align:left;font-size:13px;">' + day.note + '</td></tr>';
+
+    if (EDIT_MODE) {
+      html += '<tr class="edit-row">';
+      html += '<td>' + day.day + '</td>';
+      html += '<td><input class="edit-input edit-date" data-idx="' + idx + '" value="' + day.date + '" style="width:60px;"></td>';
+      html += '<td><input class="edit-input edit-weekday" data-idx="' + idx + '" value="' + day.weekday + '" style="width:40px;"></td>';
+      html += '<td><input class="edit-input edit-from" data-idx="' + idx + '" value="' + day.from + '" style="width:90px;"></td>';
+      html += '<td><input class="edit-input edit-to" data-idx="' + idx + '" value="' + day.to + '" style="width:90px;"></td>';
+      html += '<td><input class="edit-input edit-km" data-idx="' + idx + '" type="number" value="' + day.km + '" style="width:60px;"></td>';
+      html += '<td><input class="edit-input edit-nights" data-idx="' + idx + '" value="' + day.nights + '" style="width:100px;"></td>';
+      html += '<td><select class="edit-input edit-country" data-idx="' + idx + '" style="width:60px;">';
+      ['HU', 'AT', 'CZ', 'IT'].forEach(function (c) {
+        html += '<option value="' + c + '"' + (day.country === c ? ' selected' : '') + '>' + c + '</option>';
+      });
+      html += '</select></td>';
+      html += '<td><input class="edit-input edit-note" data-idx="' + idx + '" value="' + day.note.replace(/"/g, '&quot;') + '" style="width:180px;"></td>';
+      html += '</tr>';
+    } else {
+      html += '<tr><td>' + day.day + '</td><td>' + day.date + '</td><td>' + day.weekday + '</td><td>' + day.from + '</td><td>' + day.to + '</td><td>' + (km > 0 ? km + 'km' : '—') + '</td><td>' + day.nights + '</td><td>' + badge(day.country) + '</td><td style="text-align:left;font-size:13px;">' + day.note + '</td></tr>';
+    }
   });
 
-  html += '<tr style="background:#edf2f8;font-weight:700;"><td colspan="5">합계</td><td>~' + totalKm + 'km</td><td>19박</td><td>4개국</td><td>참고값</td></tr>';
+  html += '<tr class="sum-row"><td colspan="5">합계</td><td>~' + totalKm + 'km</td><td>19박</td><td>4개국</td><td>참고값</td></tr>';
   html += '</tbody>';
   document.getElementById('scheduleTable').innerHTML = html;
 }
@@ -330,6 +403,7 @@ function initMap(d) {
   const routePoints = d.route.map(k => c[k]).filter(Boolean);
 
   const map = L.map('map', { scrollWheelZoom: false }).setView([47.5, 14.5], 6);
+  window._mapInstance = map;
   L.control.zoom({ position: 'topright' }).addTo(map);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -420,7 +494,7 @@ function buildBudget(d) {
   html += '<th>항목</th><th>금액 (원)</th><th>상태</th><th>비고</th>';
   html += '</tr></thead><tbody>';
 
-  b.categories.forEach(cat => {
+  b.categories.forEach(function (cat) {
     total += cat.amount;
     if (cat.confirmed) confirmedTotal += cat.amount;
 
@@ -449,7 +523,7 @@ function buildBudget(d) {
   function updateTotal() {
     let sum = 0;
     let conf = 0;
-    b.categories.forEach(cat => {
+    b.categories.forEach(function (cat) {
       const input = document.querySelector('.budget-input[data-id="' + cat.id + '"]');
       if (input) {
         const val = parseInt(input.value) || 0;
@@ -471,25 +545,127 @@ function buildBudget(d) {
       '</div>';
   }
 
-  document.querySelectorAll('.budget-input').forEach(input => {
+  document.querySelectorAll('.budget-input').forEach(function (input) {
     input.addEventListener('input', updateTotal);
   });
 
   updateTotal();
 }
 
+/* ---- Edit Mode ---- */
+function toggleEditMode() {
+  EDIT_MODE = !EDIT_MODE;
+  const btn = document.getElementById('editToggleBtn');
+
+  if (EDIT_MODE) {
+    // Enter edit mode: collect current inputs first (budget may have been changed)
+    collectBudgetChanges();
+    btn.textContent = '💾 변경사항 저장';
+    btn.classList.add('editing');
+    rebuildAll();
+    showToast('편집 모드 ON — 일정을 직접 수정하세요', 'info');
+  } else {
+    // Exit edit mode: save
+    collectDayChanges();
+    collectBudgetChanges();
+    if (saveData(TRIP_DATA)) {
+      btn.textContent = '✏ 편집 모드';
+      btn.classList.remove('editing');
+      rebuildAll();
+      showToast('저장 완료! 새로고침해도 유지됩니다', 'success');
+    } else {
+      showToast('저장 실패 — 브라우저 저장공간 확인 필요', 'error');
+    }
+  }
+}
+
+function collectDayChanges() {
+  if (!TRIP_DATA || !TRIP_DATA.days) return;
+  document.querySelectorAll('.edit-date').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].date = inp.value;
+  });
+  document.querySelectorAll('.edit-weekday').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].weekday = inp.value;
+  });
+  document.querySelectorAll('.edit-from').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].from = inp.value;
+  });
+  document.querySelectorAll('.edit-to').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].to = inp.value;
+  });
+  document.querySelectorAll('.edit-km').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].km = inp.value;
+  });
+  document.querySelectorAll('.edit-nights').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].nights = inp.value;
+  });
+  document.querySelectorAll('.edit-country').forEach(function (sel) {
+    const idx = parseInt(sel.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].country = sel.value;
+  });
+  document.querySelectorAll('.edit-note').forEach(function (inp) {
+    const idx = parseInt(inp.dataset.idx);
+    if (TRIP_DATA.days[idx]) TRIP_DATA.days[idx].note = inp.value;
+  });
+}
+
+function collectBudgetChanges() {
+  if (!TRIP_DATA || !TRIP_DATA.budget) return;
+  TRIP_DATA.budget.categories.forEach(function (cat) {
+    const input = document.querySelector('.budget-input[data-id="' + cat.id + '"]');
+    if (input) cat.amount = parseInt(input.value) || 0;
+  });
+}
+
+function resetAll() {
+  if (!confirm('모든 수정사항을 초기화하고 원본 데이터로 되돌릴까요?')) return;
+  resetData();
+  TRIP_DATA = null;
+  EDIT_MODE = false;
+  const btn = document.getElementById('editToggleBtn');
+  if (btn) { btn.textContent = '✏ 편집 모드'; btn.classList.remove('editing'); }
+  location.reload();
+}
+
+/* ---- Rebuild (after edit) ---- */
+function rebuildAll() {
+  if (!TRIP_DATA) return;
+  buildTimeline(TRIP_DATA);
+  buildScheduleTable(TRIP_DATA);
+  buildBudget(TRIP_DATA);
+  buildWarnings(TRIP_DATA);
+  // Re-init map with updated data
+  if (window._mapInstance) {
+    window._mapInstance.remove();
+    window._mapInstance = null;
+  }
+  initMap(TRIP_DATA);
+}
+
 /* ---- Init ---- */
 document.addEventListener('DOMContentLoaded', async function () {
-  const data = await loadData();
-  buildHero(data);
-  buildFlights(data);
-  buildPhases(data);
-  buildTimeline(data);
-  buildScheduleTable(data);
-  buildRental(data);
-  buildAccommodations(data);
-  buildBudget(data);
-  buildWarnings(data);
-  buildTips(data);
-  initMap(data);
+  TRIP_DATA = await loadData();
+  buildHero(TRIP_DATA);
+  buildFlights(TRIP_DATA);
+  buildPhases(TRIP_DATA);
+  buildTimeline(TRIP_DATA);
+  buildScheduleTable(TRIP_DATA);
+  buildRental(TRIP_DATA);
+  buildAccommodations(TRIP_DATA);
+  buildBudget(TRIP_DATA);
+  buildWarnings(TRIP_DATA);
+  buildTips(TRIP_DATA);
+  initMap(TRIP_DATA);
+
+  // Edit button listeners
+  const editBtn = document.getElementById('editToggleBtn');
+  if (editBtn) editBtn.addEventListener('click', toggleEditMode);
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', resetAll);
 });

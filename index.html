@@ -1,95 +1,393 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2027 유럽 여행 — 항공 &amp; 지상 동선</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="style.css">
+<title>2027 유럽 여행 — 항공 &amp; 지상 동선 (최종 확정)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; background:#f4f6f9; color:#1f2d3d; line-height:1.6; padding:24px; }
+  .container { max-width:1100px; margin:0 auto; }
+  h1 { font-size:25px; color:#1a3e72; margin-bottom:6px; }
+  .subtitle { color:#64748b; margin-bottom:22px; font-size:14px; }
+  h2 { font-size:20px; color:#1a3e72; margin:30px 0 14px; padding-bottom:8px; border-bottom:3px solid #e2e8f0; }
+  h3 { font-size:16px; color:#334155; margin:18px 0 10px; }
+  .card { background:#fff; border-radius:12px; padding:24px 26px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,.08); overflow-x:auto; }
+  table { width:100%; border-collapse:separate; border-spacing:0; margin:14px 0; font-size:14px; }
+  th, td { border:1px solid #dbe3ec; padding:11px 10px; text-align:center; vertical-align:middle; line-height:1.5; }
+  th { background:#edf2f8; color:#1a3e72; font-weight:700; font-size:14px; }
+  td:first-child, th:first-child { text-align:left; }
+  tbody tr:nth-child(even) { background:#fafbfd; }
+  tbody tr:hover { background:#f1f7ff; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+  .direct { background:#dcfce7; color:#166534; }
+  .stop { background:#fee2e2; color:#991b1b; }
+  .path { background:#e0e7ff; color:#3730a3; }
+  .route { background:#f8fafc; border-radius:8px; padding:14px 18px; text-align:center; font-size:14px; letter-spacing:.5px; margin:12px 0; }
+  .note { background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
+  .tip { background:#ecfeff; border-left:4px solid #06b6d4; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
+  .warn { background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
+  .dim { color:#64748b; }
+  .flight { font-size:14px; }
+  .footer { text-align:center; color:#94a3b8; font-size:12px; margin-top:28px; }
+  .map-card { padding:10px; }
+  #routeMap { height:560px; width:100%; border-radius:10px; background:#e9eef3; }
+  .leaflet-popup { font-family:-apple-system,"Malgun Gothic",sans-serif; }
+  .legend { background:#fff; border:1px solid #dbe3ec; border-radius:8px; padding:10px 14px; font-size:12px; color:#334155; margin-top:10px; }
+  .legend b { color:#1a3e72; }
+  @media (max-width:640px){ table{font-size:12px;} th,td{padding:6px;} body{padding:12px;} #routeMap { height:440px; } }
+</style>
 </head>
 <body>
+<div class="container">
 
-<header class="hero">
-  <div class="container">
-    <h1 id="heroTitle">2027 유럽 여행 — 항공 &amp; 지상 동선</h1>
-    <p class="subtitle" id="heroSubtitle">부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프</p>
-    <div class="hero-stats" id="heroStats"></div>
-    <div class="route-summary" id="routeSummary"></div>
-    <div class="edit-controls">
-      <button id="editToggleBtn" class="edit-btn">✏ 편집 모드</button>
-      <button id="resetBtn" class="edit-btn edit-btn-reset">↺ 초기화</button>
-    </div>
-  </div>
-</header>
+<h1>🌍 2027 유럽 여행 — 항공 &amp; 지상 동선</h1>
+<p class="subtitle">부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프 (뮌헨 제외) · <b>실제 예약 기준 확정안</b></p>
 
-<main class="container">
+<!-- ============ 항공 일정 ============ -->
+<h2>✈ 항공 일정 (최종 확정)</h2>
+<div class="card">
+<table>
+  <tr><th>방향</th><th>날짜</th><th>구간</th><th>항공편</th><th>기종</th><th>출발 → 도착</th><th>비행시간</th><th>좌석</th></tr>
+  <tr>
+    <td rowspan="4"><b>가는편</b><br>7/17 (토)</td>
+    <td rowspan="2">7/17 (토)</td>
+    <td>GMP → PEK</td>
+    <td>CA138</td>
+    <td>보잉 737-300</td>
+    <td>14:25 → 15:45</td>
+    <td>2h20m</td>
+    <td rowspan="4">일반석</td>
+  </tr>
+  <tr><td class="dim" colspan="4">환승 베이징 <b>11h05m</b> · 수하물 수취/재수속 불필요</td></tr>
+  <tr>
+    <td rowspan="2">7/18 (일)</td>
+    <td>PEK → BUD</td>
+    <td>CA719</td>
+    <td>보잉 787-9</td>
+    <td>02:50 → 07:00 <span class="dim">(+1)</span></td>
+    <td>10h10m</td>
+  </tr>
+  <tr><td class="dim" colspan="4">총 소요 <b>23h35m</b> · 도착 BUD T2B</td></tr>
 
-  <section id="flights">
-    <h2 class="section-title">✈ 항공 일정 (최종 확정)</h2>
-    <div class="card" id="flightContent"></div>
-  </section>
+  <tr>
+    <td rowspan="4"><b>오는편</b><br>8/6 (금)</td>
+    <td rowspan="2">8/6 (금)</td>
+    <td>BUD → PEK</td>
+    <td>CA720</td>
+    <td>보잉 787-9</td>
+    <td>13:00 → 04:10 <span class="dim">(+1)</span></td>
+    <td>9h10m</td>
+    <td rowspan="4">일반석</td>
+  </tr>
+  <tr><td class="dim" colspan="4">출발 BUD T2B · 환승 베이징 <b>5h50m</b> · 수하물 수취/재수속 불필요</td></tr>
+  <tr>
+    <td rowspan="2">8/7 (토)</td>
+    <td>PEK → GMP</td>
+    <td>CA137</td>
+    <td>보잉 737-300</td>
+    <td>10:00 → 13:05</td>
+    <td>2h05m</td>
+  </tr>
+  <tr><td class="dim" colspan="4">총 소요 <b>17h05m</b> · 도착 GMP T1</td></tr>
+</table>
+<div class="warn"><b>🕐 베이징 환승 11h05m</b> — 시내 나들이 가능. 한국 국적은 물비자 경유 대상이라 가능하나, <b>수하물은 체크쓰루</b>로 부다페스트까지 걸고, 여권 지참 + 입국시 임시입국허가 카드 작성 필요. 환승 대기로 공항에만 있어도 묘방.</div>
+</div>
 
-  <section id="phases">
-    <h2 class="section-title">여정 단계 (8구간)</h2>
-    <div class="phase-grid" id="phaseGrid"></div>
-  </section>
+<!-- ============ 지상 동선 ============ -->
+<h2>🗺️ 지상 동선 &amp; 일정</h2>
+<div class="card">
+<div class="route">✈ 부다페스트(BUD) → 비엔나(2박) → 프라하(2박) → 체스키크룸로프(1박) → <b>고사우(3박, Hallstatt·잘츠부르크 순회)</b> → <b>돌로미티 서부(3박)</b> → <b>돌로미티 동부(3박)</b> → 그라츠(1박) → 부다페스트(3박) ✈</div>
 
-  <section id="timeline">
-    <h2 class="section-title">타임라인 (날짜별 일정)</h2>
-    <div class="card">
-      <div class="timeline" id="timelineList"></div>
-    </div>
-  </section>
+<h3>날짜별 일정</h3>
+<table>
+  <tr><th>날짜</th><th>이동</th><th>숙박</th><th>비고 / 세부 루트</th></tr>
+  <tr><td>7/18 (일)</td><td>✈ 07:00 BUD 도착 → 렌트 픽업 → <b>비엔나 외곽/공항 호텔 휴식</b> → 오후 가벼운 시내</td><td>비엔나 1박</td><td>~2.5h (M0 → M1/A4) · 밤샘 비행 후 <b>반나절 휴식 필수</b></td></tr>
+  <tr><td>7/19 (월)</td><td>비엔나 시내 관광</td><td>비엔나 1박(추가)</td><td>쇤브룬 궁 · 링슈트라세 · 트램/지하철 이용</td></tr>
+  <tr><td>7/20 (화)</td><td>비엔나 → 프라하</td><td>프라하 1박</td><td>~3.5h (A22/D1) · 체코 진입</td></tr>
+  <tr><td>7/21 (수)</td><td>프라하 시내 관광</td><td>프라하 1박(추가)</td><td>카를교 · 프라하성 · 구시가지</td></tr>
+  <tr><td>7/22 (목)</td><td>프라하 → 체스키크룸로프</td><td>크룸로프 1박</td><td>~2h (D3) · 남부 보헤미아</td></tr>
+  <tr><td>7/23 (금)</td><td>크룸로프 → 고사우(할슈타트/잘츠부르크권)</td><td>고사우 1박</td><td>~2.5~3.5h · 오스트리아 진입 · <b>고사우 기지로 Hallstatt·잘츠부르크 일일순회</b></td></tr>
+  <tr><td>7/24–26 (토–월)</td><td>고사우 기지에서 <b>Hallstatt(7/24)</b>, <b>잘츠부르크(7/25)</b>, <b>Gosausee(7/26)</b> 순회</td><td>고사우 2박(추가)</td><td>고사우↔할슈타트 ~30min, 고사우↔잘츠부르크 ~1h · 5인 가족 기지로 최적</td></tr>
+  <tr><td>7/27 (화)</td><td>고사우 → 돌로미티 서부 (Ponte Nova / Val d'Ega)</td><td>서부 1박</td><td>~3.5~4.5h (A10 → A22 → SS241) · <b>A10 Tauern tunnel 성수기 정체 주의</b></td></tr>
+  <tr><td>7/28–29 (수–목)</td><td>서부 돌로미티 관광</td><td>서부 2박(추가)</td><td>칼디 로쏘 호수 · 카르카르 데일 · 세체다/오르티세이 당일</td></tr>
+  <tr><td>7/30 (금)</td><td>서부 → 돌로미티 동부 (San Vito di Cadore)</td><td>동부 1박</td><td>~1.5~2h (SS48/SS51) · 코르티나 근접, 주차 여유</td></tr>
+  <tr><td>7/31–8/1 (토–일)</td><td>동부 돌로미티 관광</td><td>동부 2박(추가)</td><td>미주리나 호수 · 펄라 샤포라 · 트레치메 · 코르티나</td></tr>
+  <tr><td>8/2 (월)</td><td>동부 돌로미티 → 그라츠</td><td>그라츠 1박</td><td>~3.5~4h (A23 → A9) · 오스트리아 복귀</td></tr>
+  <tr><td>8/3 (화)</td><td>그라츠 → 부다페스트</td><td>부다페스트 1박</td><td>~3.5~4h (A2 → M1) · <b>시내 주차 어려우면 렌트 조기 반납 고려</b></td></tr>
+  <tr><td>8/4–5 (수–목)</td><td>부다페스트 시내 관광</td><td>부다페스트 2박(추가)</td><td>어부의 요새 · 다뉴르 · 세체니 온천 · 대중교통 이용</td></tr>
+  <tr><td>8/6 (금)</td><td>BUD 렌트 반납 → ✈ 13:00 출발</td><td>—</td><td>공항 근접 · 여유</td></tr>
+</table>
 
-  <section id="map-section">
-    <h2 class="section-title">동선 지도 &amp; Day by Day</h2>
-    <div class="map-layout">
-      <div id="map"></div>
-      <div id="daySidebar"></div>
-    </div>
-  </section>
+<div class="note"><b>🧭 숙박 합계 (19박)</b> — 비엔나 2 · 프라하 2 · 크룸로프 1 · <b>고사우 3</b> · <b>돌로미티 서부 3</b> · <b>돌로미티 동부 3</b> · 그라츠 1 · 부다페스트 3. <b>Hallstatt·Salzburg 일일순회</b>로 기지를 고사우 3박에 통합, 이동 부담↓. 돌로미티는 서부→동부 3박씩 분할. 마지막 밤(8/5)은 출발 공항과 가까운 부다페스트에 묶어 8/6 오전 여유를 확보.</div>
+<div class="tip"><b>💡 고사우 기지 루트</b> — 비엔나/잘츠부르크에서 고사우까지는 ~1h. 고사우 → Hallstatt 마을 ~30min, 고사우 → 잘츠부르크 ~1h, 고사우 → Gosausee ~15min. Vorderer Gosausee 주차장에서 호수까지 평탄한 산책로(왕복 30~50분)라 60대 어르신도 무리 없음. Dachstein 빙하 전망은 고사우 호수 건 너머로 보임.</div>
+<div class="warn"><b>⚠️ 최장 산악주행 2구간</b> — ① 고사우→돌로미티 서부(~4~4.5h) ② 동부 돌로미티→그라츠(~3.5~4h). 알프스 산길이라 비나 늦은 출발 시 5h+ 가능. 돌로미티를 6박으로 배치해 주행 부담을 낮췄고, 서부→동부 이동은 ~1.5~2h로 부담 없음.</div>
+<div class="warn"><b>⚠️ 1일차 피로 완화</b> — 7/18은 비엔나 외곽/공항 호텔에서 반나절 휴식 후, 오후부터 가벼운 시내 관광. 밤샘 비행 직후 2.5h 운전 후 곧바로 풀 일정은 피함.</div>
+<div class="tip"><b>💡 렌트카</b> — 동일 공항(BUD) in/out → 원웨이 배차료 0원. 헝가리·오스트리아·체코·이탈리아 <b>4개국 전부 포함</b> 계약인지 확인(체코·이탈리아 통과료 별도인 경우 많음).</div>
+<div class="warn"><b>⚠️ Hallstatt·Salzburg 기지 통합</b> — 5인 대형차 + 성수기에는 Hallstatt 마을 내 숙소/주차가 희소·비쌈. <b>고사우(Gosau)</b> 기지로 3박을 묶어 Hallstatt(30min)·잘츠부르크(1h) 일일순회. 숙소 폭, 주차, 가격 모두 유리하고 돌로미티 이동도 더 짧음.</div>
 
-  <section id="schedule">
-    <h2 class="section-title">상세 일정표 (20일)</h2>
-    <div class="table-wrap">
-      <table id="scheduleTable"></table>
-    </div>
-  </section>
-
-  <section id="rental">
-    <h2 class="section-title">렌트카 (예약 정보)</h2>
-    <div class="card" id="rentalContent"></div>
-  </section>
-
-  <section id="accommodations">
-    <h2 class="section-title">숙소 (가족형 · 에어비앤비 권장)</h2>
-    <div class="table-wrap">
-      <table id="accommodationTable"></table>
-    </div>
-  </section>
-
-  <section id="budget">
-    <h2 class="section-title">💰 예산 (확정 + 추정)</h2>
-    <div class="card" id="budgetContent"></div>
-  </section>
-
-  <div id="warnings"></div>
-
-  <section id="tips">
-    <h2 class="section-title">실전 팁</h2>
-    <div class="tips-grid" id="tipsGrid"></div>
-  </section>
-
-</main>
-
-<footer>
-  <p id="footerText">2027 유럽 여행 정리 · 항공(중국국제항공)·렌트카(토요타 프로에이스) 확정 기준 · 숙소는 가족형 권장안</p>
-</footer>
+<!-- ============ 동선 지도 ============ -->
+<h2>🗺️ 동선 지도</h2>
+<div class="card map-card">
+<div id="routeMap"></div>
+<div class="legend">
+<b>범례</b> — ① 다뉴브 강변 유럽 도시들 · <b>▪ 건지</b>는 정차 도시, <b>선</b>은 시계방향 이동 루트 (출발·복귀 = 부다페스트). 각 마커를 누륾 도시명·숙박 일수가 표시됩니다. <span class="dim">(오픈스트리트맵 지도 · Leaflet)</span>
+</div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="script.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>#routeMap.leaflet-container a.leaflet-popup-close-button { display:none; }</style>
+<script>
+(function(){
+  // 순서: 출발(부다페스트공항) → 비엔나 → 프라하 → 크룸로프 → 고사우 → 돌로미티 서부 → 돌로미티 동부 → 그라츠 → 복귀(부다페스트관광)
+  const stops = [
+    { name:"부다페스트 (출발·귀국)", sub:"BUD 공항 · 도착 7/18 → 출발 8/6", n:"✈", lat:47.4298, lng:19.2611 },
+    { name:"비엔나", sub:"7/18–19 · 2박", n:"①", lat:48.2082, lng:16.3738 },
+    { name:"프라하", sub:"7/20–21 · 2박", n:"②", lat:50.0755, lng:14.4378 },
+    { name:"체스키크룸로프", sub:"7/22 · 1박", n:"③", lat:48.8107, lng:14.3176 },
+    { name:"고사우", sub:"7/23–25 · 3박 · Hallstatt·잘츠부르크 순회", n:"④", lat:47.5833, lng:13.5333 },
+    { name:"돌로미티 서부", sub:"7/26–28 · 3박 · Ponte Nova/Val d'Ega", n:"⑤", lat:46.4500, lng:11.5500 },
+    { name:"돌로미티 동부", sub:"7/29–31 · 3박 · San Vito di Cadore", n:"⑥", lat:46.4550, lng:12.2070 },
+    { name:"그라츠", sub:"8/2 · 1박", n:"⑦", lat:47.0707, lng:15.4395 },
+    { name:"부다페스트 (관광)", sub:"8/3–5 · 3박 · 렌트 반납 → 공항", n:"⑧", lat:47.4979, lng:19.0402 }
+  ];
+
+  const map = L.map('routeMap', { scrollWheelZoom:true });
+  map.setView([47.5, 15.0], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // 동선 (폴리라인) — 클릭 안 되는 배경선
+  const path = stops.map(function(s){ return [s.lat, s.lng]; });
+  L.polyline(path, { color:'#2563eb', weight:4, opacity:0.85, dashArray:'2,8' }).addTo(map);
+  L.marker(path[0]).setOpacity(0); // 루프 시작/종료 강조용 (투명)
+
+  // 각 정차 마커
+  stops.forEach(function(s, i){
+    const isEnd = (i === 0 || i === stops.length-1);
+    const iconSize = isEnd ? [34,34] : [30,34];
+    const html = '<div style="width:'+iconSize[0]+'px;height:'+iconSize[1]+'px;background:'+(isEnd?'#0f766e':'#2563eb')+';color:#fff;border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3)"><span style="transform:rotate(45deg);font-size:13px;font-weight:700">'+s.n+'</span></div>';
+    const icon = L.divIcon({ html:html, className:'', iconSize:iconSize, iconAnchor:[iconSize[0]/2, iconSize[1]] });
+    L.marker([s.lat,s.lng], { icon:icon }).addTo(map).bindPopup(
+      '<b style="font-size:15px;color:#1a3e72">'+s.name+'</b><br><span style="color:#64748b">'+s.sub+'</span>'
+    );
+  });
+
+  // 모든 숙박 위치로 자동 확대 (루프 전체 보기)
+  map.fitBounds(L.latLngBounds(path).pad(0.12));
+})();
+</script>
+
+<!-- ============ 렌트카 ============ -->
+<h2>🚐 렌트카 (예약 정보)</h2>
+<div class="card">
+<table>
+  <tr><th>항목</th><th>내용</th></tr>
+  <tr><td>차종</td><td><b>토요타 프로에이스</b> 또는 유사 대형 승합차 (7인승↑)</td></tr>
+  <tr><td>인수/반납</td><td>부다페스트 리스트 페렌츠 국제공항(BUD) 지점 · 동일 지점</td></tr>
+  <tr><td>기간</td><td>7/17 (토) 08:00 → <b>8/3(화) 저녁~8/4(수) 오전</b> 예정 · <b>약 18일</b> (부다페스트 시내 주차 부담으로 조기 반납)</td></tr>
+  <tr><td>무료 취소</td><td>2027/7/15 08:00 이전 (현지시간)</td></tr>
+  <tr><td>확정</td><td>1시간 이내 확정</td></tr>
+  <tr><td>결제</td><td>온라인 선결제</td></tr>
+  <tr><td class="price">총 금액</td><td class="price"><b>₩3,124,736</b></td></tr>
+</table>
+
+<h3>요금 명세</h3>
+<table>
+  <tr><th>항목</th><th>금액</th><th>비고</th></tr>
+  <tr><td>선결제 렌터카 요금</td><td>₩2,450,182</td><td>기본 요금</td></tr>
+  <tr><td>슈페리어 업그레이드 보장</td><td>₩577,962</td><td>₩27,522 × 21일 · 충돌/도난 대인·대물, 타이어·유리, 긴급출동, 휴차료, 새시·라이트</td></tr>
+  <tr><td>차량 인수 시 결제</td><td>₩96,592</td><td>무제한 주행거리 · 충돌/도난 보장 · 대인·대물 배상</td></tr>
+  <tr><td><b>총 금액</b></td><td class="price"><b>₩3,124,736</b></td><td>세금·수수료는 인수 시 계약에 따라 변동</td></tr>
+</table>
+<div class="note"><b>⚠️ 보험 자기부담금(CDW/PDW 공제액)</b> — 보장이 기본 <b>₩8,049,325 미만</b>만 커버. 슈페어리 보장으로 낮췄긴 하지만, 사고 시 산악구간(원격지) 접수 리스크 있어 <b>자기부담금 0원(풀커버리지)</b> 추가 여부를 인수 시점에 확인 권장. 5인+짐 21일 장기라 대형차는 현명한 선택.</div>
+<div class="tip"><b>💡 부다페스트 조기 반납 권장</b> — 8/3(화) 16:00 아파트 체크인 후 짐 내리고 8/3(화) 저녁~8/4(수) 오전 공항에서 렌트카 반납. 부다페스트 구시가지(District V)는 <b>주차장 비싸고 ZTE/거주자 구역 복잡</b>. 5인 가족+대형차는 시내 주차비(1일 2~4만원) + 번호판 인식 단속 리스크보다 <b>택시/지하철+트램이 저렴·편리</b>. 65세 이상 어르신과 14세 미만 아동은 부다페스트 대중교통 무료(아래 참고).</div>
+<div class="warn"><b>⚠️ 인 × 짐 & 7인승</b> — 5인 + 23kg 수하물 5개면 프로에이스급이 적당. 다만 마지막 3번째 열을 짐으로 쓰거나, 최소 <b>길이 확보</b> 확인 필요. 국경 통과(헝가리·오스트리아·체코·이탈리아) 수수료 별도 인지 확인.</div>
+</div>
+
+<!-- ============ 대중교통 무료 제도 (65세 이상·아동) ============ -->
+<h2>🎫 65세 이상·아동 대중교통 무료 제도</h2>
+<div class="card">
+<table>
+  <tr><th>도시</th><th>대상</th><th>혜택</th><th>증빙 / 유의사항</th></tr>
+  <tr><td><b>부다페스트</b></td><td>만 65세 이상<br>만 14세 미만 아동</td><td><b>BKK 전 대중교통 무료</b><br>(지하철·트램·버스·허브)</td><td>여권 또는 신분증으로 연령 확인. 검표 시 즉시 제시. <b>모든 국적 적용</b>.</td></tr>
+  <tr><td><b>프라하</b></td><td>만 70세 이상<br>만 15세 미만 아동</td><td>PID 대중교통 무료</td><td>70세 이상은 여권으로 즉시 무료. 60–69세는 할인권 구매(반값). 15세 미만 아동은 동반 시 여권/학생증으로 무료.</td></tr>
+  <tr><td><b>비엔나</b></td><td>만 65세 이상</td><td>연간 패스 할인<br>일일권 할인 일부</td><td>관광객은 무료 아님. <b>24h/48h/72h 관광 패스</b> 구매 권장. 65세 이상 할인 여부는 해당 패스 정책에 따름.</td></tr>
+  <tr><td><b>잘츠부르크</b></td><td>만 65세 이상</td><td>Salzburg Card 등 할인</td><td>대중교통 단일 무료 제도는 없으나, 관광 카드(1일/2일/3일)에 대중교통 포함된 경우가 많음.</td></tr>
+  <tr><td><b>돌로미티·이탈리아</b></td><td>만 65세 이상</td><td>일반적으로 무료 아님</td><td>지역 버스는 정상 요금. 시니어 할인 거의 없음. 렌트카 사용 권장.</td></tr>
+</table>
+<div class="tip"><b>💡 실전 활용 팁</b> — 본 일정에서 대중교통이 핵심인 곳은 <b>부다페스트(8/3–5)</b>와 <b>프라하(7/20–21)</b>. 65세 이상 어르신이 1명이라도 포함되면 부다페스트 3일/프라하 2일 교통비가 대폭 절감. 13세 아동은 두 도시 모두 무료 대상. 다만 <b>여권을 항상 휴대</b>해야 검표에 대응 가능.</div>
+<div class="warn"><b>⚠️ 연령 기준 주의</b> — 부다페스트는 <b>만 14세 미만</b>, 프라하는 <b>만 15세 미만</b> 무료. 2027년 기준 13세 아동은 모두 해당. 65세 이상 여부는 <b>생년월일 기준</b>이며 여권에 영문으로 표기되어 있어 증빙 가능.</div>
+<div class="note"><b>📎 공식 참고</b> — 부다페스트 BKK: <a href="https://bkk.hu/downloads/43410/" target="_blank">bkk.hu/downloads/43410</a> · 프라하 PID: <a href="https://pid.cz/en/fares/discounted-fares/" target="_blank">pid.cz/en/fares/discounted-fares</a></div>
+</div>
+
+<!-- ============ 숙소 (가족형) ============ -->
+<h2>🏠 확정 숙소 (실제 예약 기준)</h2>
+<div class="card">
+<p class="dim" style="margin-bottom:10px;">5인 가족 + 렌트카 기준. 아래는 <b>확정 예약</b>이며, 중복 예약은 별도로 정리해 취소 예정.</p>
+<table>
+  <tr><th>도시(박)</th><th>기간</th><th>확정 숙소 / 위치</th><th>예약처 / 번호</th><th>가족형 포인트</th></tr>
+  <tr><td><b>비엔나</b> (2)</td><td>7/18–19</td><td>josef's home I Premium Apartment<br>Sobieskigasse 1A, 1090 Wien</td><td>아고다 #1768921968</td><td>85m², 더블+소파베드 · 구시가지 도보권</td></tr>
+  <tr><td><b>프라하</b> (2)</td><td>7/20–21</td><td>Encore Boutique Residence by Dwellfort<br>Jagellonská 21, Praha 130 00</td><td>아고다</td><td>78m², 트윈+더블+소파 · 시내 근접</td></tr>
+  <tr><td><b>체스키크룸로프</b> (1)</td><td>7/22</td><td>Vltavska pohadka<br>Rybářská 23, Český Krumlov 381 01</td><td>아고다</td><td>50m², 더블+소파 · 조식 포함</td></tr>
+  <tr><td><b>고사우</b> (3)</td><td>7/23–25</td><td>Dachstein 7<br>Stötzlgasse 7, Gosau 4824</td><td>아고다</td><td>73m², 트리플+소파 · 마운틴 뷰 · 할슈타트·잘츠부르크 기지</td></tr>
+  <tr><td><b>돌로미티 서부</b> (3)</td><td>7/26–28</td><td>Apartment Panorama<br>S. Valentino 4, Ponte Nova (Val d'Ega)</td><td>부킹닷컴 #5910282790</td><td>55m², 2BR · 후기 9.6/10 · 칼디 로쏘 직접</td></tr>
+  <tr><td><b>돌로미티 동부</b> (3)</td><td>7/29–31</td><td>Comodo appartamento a San Vito di Cadore<br>Via Beata Vergine della Difesa 130, 32046</td><td>아고다</td><td>70m², 더블+트윈2+소파 · 코르티나 직접</td></tr>
+  <tr><td><b>그라츠</b> (1)</td><td>8/2</td><td>Luxusapartment mit 40 qm Terrasse<br>4 Grenzgasse, Graz 8055</td><td>아고다</td><td>100m², 테라스 40m² · 주차 있음</td></tr>
+  <tr><td><b>부다페스트</b> (3)</td><td>8/3–5</td><td><b>Parliament Luxury Apartment</b><br>Akadémia utca 14, Budapest 1051</td><td>아고다 #1771297145</td><td>67m², 퀸베드 2개+소파베드 · 시티뷰 · 세체니 다뉴브 도보권</td></tr>
+</table>
+<div class="note"><b>🏠 총 19박·8군데 이동</b> — 비엔나 2 · 프라하 2 · 크룸로프 1 · 고사우 3 · 돌로미티 서부 3 · 돌로미티 동부 3 · 그라츠 1 · 부다페스트 3. Hallstatt·Salzburg은 고사우 3박 기지로 일일순회. 돌로미티는 서부(Ponte Nova)→동부(San Vito di Cadore) 3박씩 분할.</div>
+<div class="warn"><b>⚠️ 중복 예약 취소 예정</b> — 아래 숙소는 동일 기간에 중복 예약되어 있으므로 <b>취소 필요</b>.
+  <ul style="margin:8px 0 0 20px; font-size:13px;">
+    <li>7/26–28 돌로미티 서부: Kaiserau 1907 (Renon), Aparthotel Majestic (Predazzo) → Apartment Panorama 확정</li>
+    <li>7/29–31 돌로미티 동부: Dolomite Home (Villabassa) → San Vito di Cadore 확정</li>
+    <li>기존 Hallstatt 1박 / Salzburg 2박 예약 → 고사우 3박(Dachstein 7)으로 통합</li>
+    <li>기존 Vienna 2박 예약 → josef's home 3박으로 변경</li>
+    <li>기존 Prague 3박 예약 → Encore 2박으로 변경</li>
+  </ul>
+</div>
+<div class="tip"><b>📌 부다페스트 숙소 선정 이유</b> — Parliament Luxury Apartment(아고다 #1771297145)는 <b>Akadémia utca 14, District V</b>로 세체니 다뉴브 다리·헝가리 국회의사당 도보권. 67m²에 퀸베드 2개+소파베드로 5인 가능. 체크인 8/3(화) 16:00 / 체크아웃 8/6(금) 11:00. 다만 <b>주차 미제공</b> 가능성이 높아, 8/3(화) 오후 아파트에 짐만 내린 뒤 <b>공항에서 렌트카 조기 반납</b>(8/3 저녁 또는 8/4 오전)하고 대중교통으로 시내 관광 권장. 총 요금 EUR 690.26(3박, 세금·봉사료 포함, 8% 프로모션 할인 적용, 2027/7/4 전 무료 취소).</div>
+<div class="warn"><b>⚠️ 일정 시점(2027년 7월~8월)은 유럽 피크시즌</b> — 할슈타트·돌로미티는 <b>2~3달 전에 풀매진</b>되어. 지금부터 발권 시점 기준으로 <b>예약 가능한 곳부터 순차 확보</b>하는 걸 권장. 무료취소 있는 항공·렌트로 예약 확정 후 숙소를 잡는 게 안전.</div>
+</div>
+
+<!-- ============ 실제 여행 후기 ============ -->
+<h2>📖 실제 여행 후기</h2>
+<div class="card">
+<table>
+  <tr><th>후기</th><th>일정/인원/차량</th><th>핵심 팁</th></tr>
+  <tr>
+    <td><a href="https://cafe.naver.com/f-e/cafes/11211755/articles/262501?boardtype=L&referrerAllArticles=true&inCafeSearch=true&query=%EB%B6%80%EB%8B%A4%ED%8E%98%EC%8A%A4%ED%8A%B8%20%EB%B9%84%EC%97%94%EB%82%98&art=aW50ZXJuYWwtY2FmZS1hcnRpY2xlLXJlYWQtaW4TYWZlLXNlYXJjaC1saXN0.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjYWZlVHlwZSI6IkNBRkVfSUQiLCJhcnRpY2xlSWQiOjI2MjUwMSwiaXNzdWVkQXQiOjE3ODc5NjU0MjcxMTYsImNhZmVJZCI6MTEyMTE3NTV9.LJNepHbs3PZSURiD73DMLkERykc7AkjOdgyAajcpeK4&page=1" target="_blank">유빙여행후기<br>2025.12.20-29<br>나무33</a></td>
+    <td>비엔나·부다페스트·프라하·체스키크룸로프·잘츠부르크·할슈타트/오버트라운<br>6인(가족3+처형3), 벤츠 비토 투어러 9인승<br>8일간 약 1,700km</td>
+    <td style="text-align:left">
+      <b>부다페스트</b>: Easy Park 앱 주차 편함. 세체니 온천 5분 주차 딱지 주의. 슈테판 성당 공연 VIP 추천.<br>
+      <b>프라하</b>: Old Town 호텔 주차 제공 안 됨. 공영주차장 3일 약 10만원. 아시안 식품점에서 식료품 저렴.<br>
+      <b>잘츠부르크</b>: 사운드오브뮤직 마지막 코스 징크트길겐이 가장 좋았음. 모짜르트 박물관 외에는 징크트길겐 숙소 추천.<br>
+      <b>할슈타트/오버트라운</b>: 겨울 소금광산은 오후 일정. 숙소 2개 안 나와 할슈타트 포기하고 오버트라운 가족 리조트 이용(방3, 벽난로, 사우나, 주방).<br>
+      <b>비엔나</b>: 벨베데레 클림트 '키스'는 타임슬롯 미리 구매. 주말 마트 휴일.<br>
+      <b>공통</b>: 슈퍼커버 필수(밴이라 흠집 남). 밤운전·산길 피하기. 시골은 동전/접촉식 카드 주차 많음.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://m.blog.naver.com/cham4lang1/223117029340" target="_blank">동유럽 자유여행<br>7박 9일 후기<br>cham4lang1</a></td>
+    <td>부다페스트 → 비엔나 → 할슈타트 → 잘츠부르크 → 체스키크룸로프 → 프라하<br>혼자 / 세미패키지 전용버스</td>
+    <td style="text-align:left">
+      <b>할슈타트·체스키크룸로프</b>: 소도시라 1박은 일정이 넘쳐 당일치기로 충분.<br>
+      <b>프라하</b>: 마지막 도시로 물가 저렴 + 맥주 + 쇼핑 여유.<br>
+      <b>부다페스트</b>: 야경이 인생 최고. 세체니 온천으로 힐링.<br>
+      <b>비엔나</b>: 우아·고풍스러운 분위기. 벨베데레궁전·쇤부르크궁전 글로리에테 추천.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://tourdesign.tistory.com/290" target="_blank">우리부부 동유럽<br>자유여행 준비 노트<br>노니조아</a></td>
+    <td>프라하 → 체스키크룸로프 → 잘츠부르크 → 할슈타트 → 비엔나 → 부다페스트<br>부부 / 철도·버스</td>
+    <td style="text-align:left">
+      <b>동유럽 클래식 코스</b>: "체오헝 7박 9일"(프라하 IN → 부다페스트 OUT).<br>
+      <b>항공권</b>: 91일 전(취소수수료 0)이 저점 구매 기회.<br>
+      <b>철도</b>: 90일 전 예매가 저렴. OMIO 또는 OBB 직접 예약.<br>
+      <b>부다페스트</b>: 야경을 위해 최소 2박 권장(날씨 대비).<br>
+      <b>체스키크룸로프→잘츠부르크</b>: FlixBus는 6개월 전 14EUR → 이후 38.49EUR로 급등. CK Shuttle 대안.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://pmhauto.tistory.com/5000771" target="_blank">뮌헨→프라하 이동<br>동유럽·발칸여행<br>raintree.</a></td>
+    <td>뮌헨 → 프라하<br>4인 / 푸조 5008</td>
+    <td style="text-align:left">
+      <b>독일 고속도로</b>: 통행료 물로, 일부 구간 제한속도 없음.<br>
+      <b>체코 국경 환전</b>: 환전소 수수료 폭리 — 18유로 손해. <b>카드 결제 권장</b>.<br>
+      <b>프라하 아파트</b>: 침실2, 욕실2, 거실, 주방 상태 양호. 식료품 물가 저렴.<br>
+      <b>렌트카 보험</b>: 부부 한정 운전 가능 — 추가 운전자 등록 필요.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="http://wjyun.blogspot.com/p/day-2.html" target="_blank">중부유럽 렌트카<br>여행 Day 2</a></td>
+    <td>프라하 → 체스키크룸로프<br>약 2시간</td>
+    <td style="text-align:left">
+      <b>세스트카(Sezestka)</b> 하이퍼마켓에서 물·간식·비상약 구매 — 체코 물가가 저렴.<br>
+      <b>4번 고속도로</b>는 산악지대라 운전 어려움 → <b>3번 고속도로(D3)</b> 선택.<br>
+      중간 주유소에서 화장실·편의점 이용.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://dlguswo333.github.io/post/2025/12-07-ko-rental-car-travel-dolomites/" target="_blank">이탈리아 돌로미티<br>오르티세이 렌트카 여행</a></td>
+    <td>베네치아 메스트레 → 오르티세이<br>1인 / Jeep Renegade<br>297km, 3h 19min</td>
+    <td style="text-align:left">
+      <b>ZTL 주의</b>: 오르티세이 및 돌로미티 마을 곳곳에 차량 진입 제한 구역.<br>
+      <b>고속도로 요금</b>: 메스트레→Chiusa 22.5유로.<br>
+      <b>주차</b>: 오르티세이 Central 주차장은 시간당 1.9유로. Alpe di Siusi 서쪽 Seis am Schlern에 물로 주차 빌딩 있음.<br>
+      <b>렌트카 옵션</b>: 복불복 — 후방 치메라 없을 수 있음. <b>차량 영상 촬영 권장</b>.<br>
+      <b>주말 영업</b>: 토요일 점심까지만, 일요일 휴무 — 차량 문제 시 대응 어려움.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://heytravel.kr/8573-2/" target="_blank">P의 울퉁불퉁<br>돌로미티 여행기</a></td>
+    <td>밀라노 → 오르티세이 → 코르티나<br>1인 / 푸조 3008</td>
+    <td style="text-align:left">
+      <b>트레치메 주차</b>: auronzo.info에서 사전 예약 필수(40유로/12h).<br>
+      <b>Alpe di Siusi</b>: 09:00~17:00 차량 진출입 통제. 케이블카 이용.<br>
+      <b>숙소</b>: 돌로미티 농가 민박은 agriturismo.it 또는 구글맵 직접 문의.<br>
+      <b>운전</b>: 풀커버 보험 필수. 이탈리아인들이 산악도로에서 과속하며 쫓아옴.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://gurangemong.tistory.com/87" target="_blank">부다페스트에서<br>렌트카 빌리기<br>구렌지몽</a></td>
+    <td>부다페스트 IN-OUT<br>Budget 렌트카</td>
+    <td style="text-align:left">
+      <b>보험</b>: 부킹닷컴 풀커버는 현장에서 다른 회사 보험이라 인정 안 될 수 있음. 현장에서 Budget 보험으로 변경(약 60만원).<br>
+      <b>보증금</b>: 1,500유로라고 적혀 있으나 현장 보험 가입 시 40만원으로 감소.<br>
+      <b>국경비용</b>: Schengen 국가 간 이동 시 크로스볼더 피 발생.<br>
+      <b>반납 후 메일</b>: 추가 결제 인보이스 메일이 올 수 있으나 대부분 무시 가능(직원 확인 권장).
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://www.tripstore.kr/blog/%EB%A0%8C%ED%84%B0%EC%B9%B4-%ED%94%84%EB%9D%BC%ED%95%98-%EC%8B%9C%EB%82%B4-%EC%A3%BC%EC%B0%B0-%ED%8C%81-%EC%99%B8%EA%B3%BD-%ED%88%AC%EC%96%B4" target="_blank">프라하 시내<br>렌터카 주차 꿀팁<br>트립스토어</a></td>
+    <td>프라하 시내</td>
+    <td style="text-align:left">
+      <b>주차 구역</b>: 파란선(1h), 볼라선(24h 유료), 주황선(2~3h 단기). 시간당 40~80코루나.<br>
+      <b>앱</b>: <b>PID Lítačka</b> 앱에 카드 등록하면 주차 연장 가능.<br>
+      <b>트램 우선</b>: 트램 선로 위에서는 좌회전·유턴 금지. 차선 미리 확인.<br>
+      <b>권장</b>: P+R에 주차하고 대중교통 이용. 팔라디움 백화점 실내 주차장도 안전.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://www.bestcarhire.com/blog/central-europe-road-trip-prague-vienna-budapest/" target="_blank">Central Europe<br>Road Trip Tips<br>Best Car Hire</a></td>
+    <td>Prague → Vienna → Budapest<br>약 1,000km</td>
+    <td style="text-align:left">
+      <b>비네트</b>: 체코 10일 310CZK(약 13EUR), 오스트리아 10일 11.50EUR, 헝가리 10일 3,500HUF(약 9EUR).<br>
+      <b>연료비</b>: Prague→Budapest 구간 표준 휘발유 차 기준 70~90EUR.<br>
+      <b>속도</b>: 3국 모두 고속도로 130km/h. <b>체코는 상시 전조등 ON</b>.<br>
+      <b>국경</b>: Schengen이라 검문은 없으나 경찰 단속 있음. 운전면허·여권·렌트 계약서 상시 휴대.
+    </td>
+  </tr>
+  <tr>
+    <td><a href="https://www.fodors.com/news/travel-tips/everything-you-need-to-know-before-your-european-roadtrip" target="_blank">Fodor's<br>European Roadtrip<br>Tips 2025</a></td>
+    <td>유럽 전반</td>
+    <td style="text-align:left">
+      <b>차량 크기</b>: 가능한 소형차 선택. 좁은 골목·주차에 유리.<br>
+      <b>IDP</b>: 오스트리아·이탈리아·스페인 등에서 요구할 수 있음. 한국 면허증 + 국제면허증 휴대.<br>
+      <b>비네트</b>: 국경 주유소보다 공식 온라인 구매가 저렴. 번호판 정확히 입력.<br>
+      <b>주차</b>: 구시가지는 P+R 또는 주차장 이용 후 도보/대중교통. ZTL(차량 진출입 제한) 주의.<br>
+      <b>주유</b>: 대부분 선결제 후 주유. 카드 사용 가능하나 현금도 준비.
+    </td>
+  </tr>
+</table>
+<div class="tip"><b>💡 9인승 밴 실전 교훈</b> — 60대 어르신+초등 아동 포함 6인 기준, 대중교통보다 밴이 편했으나 <b>8일 1,700km도 운전자에게는 상당한 부담</b>. 본 일정은 19박 약 2,000km+이므로 2명 이상 운전자 로테이션과 충분한 휴식일 배분이 필수.</div>
+<div class="note"><b>📝 후기 추가 안내</b> — 이 표는 사용자가 제공한 후기 링크를 중심으로 정리한 것입니다. 추가 후기 링크가 있으면 아래 마크다운 파일이나 이 표에 계속 추가할 수 있습니다.</div>
+</div>
+
+<p class="footer">2027 유럽 여행 정리 · 항공(중국국제항공)·렌트카(토요타 프로에이스) 확정 기준 · 숙소는 가족형 권장안이며 실제 예약·가격은 추후 확인 필요</p>
+
+</div>
 </body>
 </html>
+
+
+
+
+
+
+
+

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2027 유럽 여행 — 항공 &amp; 지상 동선 (최종 확정)</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✈️%3C/text%3E%3C/svg%3E">
+<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✈️%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <!-- Firebase v9 modular SDK (loaded as ES modules from CDN; no bundler required) -->
 <script type="module">
@@ -424,6 +426,13 @@
 <div class="card">
   <div class="note" style="margin-bottom:14px;">
     <b>🔥 Firebase 메모장</b> — 이 메모장은 Firebase Realtime Database를 사용합니다. 아래 placeholder를 실제 Firebase 설정값으로 교체하세요.
+  </div>
+  <div id="firebaseStatusBanner" class="firebase-status" role="status" aria-live="polite" style="display:none;">
+    <span class="firebase-status-icon">💡</span>
+    <div class="firebase-status-body">
+      <b>Firebase 연결이 꺼져 있어 로컬 모드로 동작 중입니다.</b>
+      <span>메모는 이 브라우저에 임시 저장되며, 여러 기기에서 동기화하려면 Firebase Console에서 <b>익명 로그인(Anonymous)</b>과 <b>Realtime Database</b>를 활성화해 주세요.</span>
+    </div>
   </div>
   <div id="memoFormWrap"></div>
   <div class="tag-filter" id="memoFilter"></div>

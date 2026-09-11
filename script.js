@@ -1,6 +1,42 @@
 /* 2027 EU Trip Portal — script.js
  * Data loaded from data/trips.json (GitHub Pages) with embedded fallback (file://).
+ *
+ * ---- Firebase Realtime Database 설정 (PLACEHOLDER) ----
+ * 1. https://console.firebase.google.com/ 에서 새 프로젝트를 만듭니다.
+ * 2. ⚙️ (프로젝트 개요 옆 톱니바퀴) → 프로젝트 설정 → 일반 → 내 앱의
+ *    Firebase SDK snippet에서 아래 값들을 복사해 붙여넣으세요.
+ *    - apiKey
+ *    - authDomain
+ *    - databaseURL  (Realtime Database URL)
+ *    - projectId
+ *    - storageBucket
+ *    - messagingSenderId
+ *    - appId
+ * 3. Realtime Database를 생성하고 Rules 탭에서 아래 규칙을 적용하세요.
+ *
+ *    {
+ *      "rules": {
+ *        ".read": false,
+ *        ".write": false,
+ *        "memos": {
+ *          ".read": "auth != null",
+ *          ".write": "auth != null"
+ *        }
+ *      }
+ *    }
+ *
+ * 4. Authentication → Sign-in method → 익명(Anonymous) 로그인을 활성화하세요.
+ * -------------------------------------------------------
  */
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyCCI45967MMBof-21FD9ijxuzV4suk6zBQ',
+  authDomain: 'eu-trip-2027.firebaseapp.com',
+  databaseURL: 'https://eu-trip-2027-default-rtdb.firebaseio.com/',
+  projectId: 'eu-trip-2027',
+  storageBucket: 'eu-trip-2027.firebasestorage.app',
+  messagingSenderId: '821434723513',
+  appId: '1:821434723513:web:be4456e9cbb54f9c11bf68'
+};
 
 const FALLBACK_DATA = {
   "meta": {
@@ -705,6 +741,122 @@ let MEMOS = [];
 let MEMO_EDIT_ID = null;
 const ACTIVE_FILTERS = { savedLinks: null, researchNotes: null, memo: null };
 
+/* ---- Firebase state ---- */
+let FB_APP = null;
+let FB_AUTH = null;
+let FB_DB = null;
+let FB_MEMOS_REF = null;
+let FB_UNSUBSCRIBE = null;
+let FIREBASE_READY = false;
+let FIREBASE_FALLBACK_REASON = '';
+
+function isPlaceholderConfig(cfg) {
+  return !cfg || String(cfg.apiKey).indexOf('YOUR_') === 0 || String(cfg.databaseURL).indexOf('https://YOUR_') === 0;
+}
+
+function initFirebase() {
+  if (isPlaceholderConfig(FIREBASE_CONFIG)) {
+    console.log('[firebase] placeholder config detected; using localStorage only.');
+    FIREBASE_FALLBACK_REASON = 'Firebase 설정이 placeholder 상태입니다.';
+    return;
+  }
+  if (typeof window === 'undefined' || !window._firebase) {
+    FIREBASE_FALLBACK_REASON = 'Firebase SDK를 불러오지 못했습니다.';
+    showToast('Firebase SDK를 불러오지 못했습니다. 오프라인 모드로 전환합니다.', 'error');
+    return;
+  }
+  try {
+    const fb = window._firebase;
+    FB_APP = fb.initializeApp(FIREBASE_CONFIG);
+    FB_AUTH = fb.getAuth(FB_APP);
+    FB_DB = fb.getDatabase(FB_APP);
+    FB_MEMOS_REF = fb.ref(FB_DB, 'memos');
+
+    fb.onAuthStateChanged(FB_AUTH, function (user) {
+      if (user) {
+        FIREBASE_READY = true;
+        attachMemoListener();
+      } else {
+        FIREBASE_READY = false;
+      }
+    }, function (err) {
+      console.error('[firebase] auth state error', err);
+      showToast('Firebase 인증 상태 오류 — 오프라인 모드로 전환합니다.', 'error');
+      FIREBASE_READY = false;
+    });
+
+    fb.signInAnonymously(FB_AUTH).catch(function (err) {
+      console.error('[firebase] anonymous sign-in failed', err);
+      showToast('Firebase 익명 로그인에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
+      FIREBASE_READY = false;
+    });
+  } catch (err) {
+    console.error('[firebase] init error', err);
+    showToast('Firebase 초기화 오류 — 오프라인 모드로 전환합니다.', 'error');
+    FIREBASE_READY = false;
+  }
+}
+
+function attachMemoListener() {
+  if (!FB_MEMOS_REF || !window._firebase) return;
+  const fb = window._firebase;
+  if (FB_UNSUBSCRIBE) { FB_UNSUBSCRIBE(); FB_UNSUBSCRIBE = null; }
+
+  FB_UNSUBSCRIBE = fb.onValue(FB_MEMOS_REF, function (snapshot) {
+    const val = snapshot.val();
+    const arr = [];
+    if (val) {
+      Object.keys(val).forEach(function (k) {
+        const item = Object.assign({ id: k }, val[k]);
+        item.tags = normalizeTags(item.tags);
+        arr.push(item);
+      });
+    }
+    arr.sort(function (a, b) {
+      return String(b.createdAt).localeCompare(String(a.createdAt));
+    });
+    MEMOS = arr;
+    cacheMemosLocally();
+    renderMemoList();
+    buildMemoFilter();
+  }, function (err) {
+    console.error('[firebase] onValue error', err);
+    showToast('Firebase 데이터 동기화에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
+    FIREBASE_READY = false;
+    loadMemosFromCache();
+    renderMemoList();
+    buildMemoFilter();
+  });
+}
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) return tags.filter(Boolean);
+  if (tags && typeof tags === 'object') return Object.values(tags).filter(Boolean);
+  if (typeof tags === 'string') return tags.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+  return [];
+}
+
+function loadMemosFromCache() {
+  try {
+    const saved = localStorage.getItem(MEMO_STORAGE_KEY);
+    if (saved) {
+      MEMOS = JSON.parse(saved) || [];
+    } else {
+      MEMOS = [];
+    }
+  } catch (e) {
+    MEMOS = [];
+  }
+}
+
+function cacheMemosLocally() {
+  try {
+    localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(MEMOS));
+  } catch (e) {
+    console.error('[memo] local cache failed:', e);
+  }
+}
+
 async function loadData() {
   // 1. Check localStorage for saved edits
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -1083,23 +1235,22 @@ function initMemoPad(d) {
   const listEl = document.getElementById('memoSection');
   if (!formWrap || !listEl) return;
 
-  const saved = localStorage.getItem(MEMO_STORAGE_KEY);
-  if (saved) {
-    try {
-      MEMOS = JSON.parse(saved) || [];
-    } catch (e) { MEMOS = []; }
-  }
+  loadMemosFromCache();
+
   if (!MEMOS || MEMOS.length === 0) {
     MEMOS = (d.sampleMemos || []).map(function (m) {
       return { id: m.id, title: m.title, content: m.content, tags: m.tags.slice(), createdAt: m.createdAt };
     });
-    saveMemos(false);
+    cacheMemosLocally();
   }
 
   renderMemoForm();
   renderMemoList();
   buildMemoFilter();
   bindExportImport();
+
+  // Firebase Realtime Database 동기화 시작 (설정이 유효할 때만)
+  initFirebase();
 }
 
 function renderMemoForm() {
@@ -1139,23 +1290,37 @@ function handleMemoSubmit() {
   if (MEMO_EDIT_ID) {
     const idx = MEMOS.findIndex(function (m) { return m.id === MEMO_EDIT_ID; });
     if (idx !== -1) {
-      MEMOS[idx].title = title;
-      MEMOS[idx].content = content;
-      MEMOS[idx].tags = tags;
+      const updates = { title: title, content: content, tags: tags, updatedAt: new Date().toISOString() };
+      if (FIREBASE_READY && FB_DB && window._firebase) {
+        const fb = window._firebase;
+        fb.update(fb.ref(FB_DB, 'memos/' + MEMO_EDIT_ID), updates).catch(function (err) {
+          console.error('[firebase] update failed', err);
+          showToast('Firebase 저장 실패 — localStorage에 보관합니다.', 'error');
+          FIREBASE_READY = false;
+        });
+      }
+      Object.assign(MEMOS[idx], updates);
     }
     MEMO_EDIT_ID = null;
     showToast('메모가 수정되었습니다.', 'success');
   } else {
-    MEMOS.unshift({
-      id: 'memo-' + Date.now(),
+    const newMemo = {
       title: title,
       content: content,
       tags: tags,
       createdAt: new Date().toISOString()
-    });
+    };
+    if (FIREBASE_READY && FB_MEMOS_REF && window._firebase) {
+      const fb = window._firebase;
+      const newRef = fb.push(FB_MEMOS_REF, newMemo);
+      newMemo.id = newRef.key;
+    } else {
+      newMemo.id = 'memo-' + Date.now();
+    }
+    MEMOS.unshift(newMemo);
     showToast('메모가 추가되었습니다.', 'success');
   }
-  saveMemos(false);
+  cacheMemosLocally();
   renderMemoForm();
   renderMemoList();
   buildMemoFilter();
@@ -1175,12 +1340,20 @@ function editMemo(id) {
 
 function deleteMemo(id) {
   if (!confirm('이 메모를 삭제할까요?')) return;
+  if (FIREBASE_READY && FB_DB && window._firebase) {
+    const fb = window._firebase;
+    fb.remove(fb.ref(FB_DB, 'memos/' + id)).catch(function (err) {
+      console.error('[firebase] remove failed', err);
+      showToast('Firebase 삭제 실패 — localStorage에서만 삭제합니다.', 'error');
+      FIREBASE_READY = false;
+    });
+  }
   MEMOS = MEMOS.filter(function (m) { return m.id !== id; });
   if (MEMO_EDIT_ID === id) {
     MEMO_EDIT_ID = null;
     renderMemoForm();
   }
-  saveMemos(false);
+  cacheMemosLocally();
   renderMemoList();
   buildMemoFilter();
   showToast('메모가 삭제되었습니다.', 'info');
@@ -1233,13 +1406,8 @@ function buildMemoFilter() {
 }
 
 function saveMemos(notify) {
-  try {
-    localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(MEMOS));
-    if (notify !== false) showToast('메모가 저장되었습니다.', 'success');
-  } catch (e) {
-    console.error('[memo] 저장 실패:', e);
-    showToast('메모 저장 실패 — 브라우저 저장공간을 확인하세요.', 'error');
-  }
+  cacheMemosLocally();
+  if (notify !== false) showToast('메모가 저장되었습니다.', 'success');
 }
 
 function exportMemos() {
@@ -1263,13 +1431,36 @@ function importMemos(file) {
     try {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('invalid format');
-      MEMOS = imported;
-      saveMemos(false);
+
+      if (FIREBASE_READY && FB_MEMOS_REF && window._firebase) {
+        const fb = window._firebase;
+        imported.forEach(function (m) {
+          const memo = {
+            title: m.title || '',
+            content: m.content || '',
+            tags: normalizeTags(m.tags),
+            createdAt: m.createdAt || new Date().toISOString()
+          };
+          fb.push(FB_MEMOS_REF, memo);
+        });
+        showToast('메모를 Firebase에 가져왔습니다.', 'success');
+      } else {
+        imported.forEach(function (m) {
+          if (!MEMOS.find(function (existing) { return existing.id === m.id; })) {
+            MEMOS.push(m);
+          }
+        });
+        MEMOS.sort(function (a, b) {
+          return String(b.createdAt).localeCompare(String(a.createdAt));
+        });
+        showToast('메모를 가져왔습니다.', 'success');
+      }
+
       MEMO_EDIT_ID = null;
+      cacheMemosLocally();
       renderMemoForm();
       renderMemoList();
       buildMemoFilter();
-      showToast('메모를 가져왔습니다.', 'success');
     } catch (err) {
       console.error('[memo] import 실패:', err);
       showToast('메모 가져오기 실패 — 올바른 JSON 파일인지 확인하세요.', 'error');

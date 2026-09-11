@@ -830,6 +830,244 @@ body.editing-on .phase-sep {
   font-size: 13px;
 }
 
+/* Firebase status banner */
+.firebase-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--amber-bg);
+  border: 1px solid #fde68a;
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #92400e;
+  line-height: 1.55;
+}
+
+.firebase-status-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.firebase-status-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Memo form improvements */
+.memo-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.memo-form-row {
+  margin-bottom: 14px;
+}
+
+.memo-form-row:last-child {
+  margin-bottom: 0;
+}
+
+.memo-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.memo-input,
+.memo-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.memo-input:focus,
+.memo-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.memo-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.55;
+}
+
+.memo-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.memo-form-actions .edit-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.memo-form-actions .edit-btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.memo-form-actions .edit-btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* Tag filter improvements */
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 4px;
+}
+
+.tag-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tag-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.tag-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(26, 95, 122, 0.22);
+}
+
+.tag-btn.active:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* Card improvements (saved links, reviews, notes, memos) */
+.memo-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border-left: 4px solid var(--primary);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.memo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.memo-card h4 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.memo-card .meta {
+  margin-bottom: 10px;
+}
+
+.memo-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 14px;
+  white-space: pre-wrap;
+}
+
+.memo-card .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.memo-card .tags .tag {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+}
+
+.memo-card .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.memo-card .link-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+}
+
+.memo-card .memo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.memo-card .memo-actions .edit-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.memo-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 20px;
+  background: #f8fafc;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
 /* Footer */
 footer {
   text-align: center;
@@ -901,14 +1139,25 @@ footer {
     gap: 6px;
   }
   .tag-btn {
-    padding: 4px 10px;
+    padding: 5px 11px;
     font-size: 12px;
   }
   .memo-card {
-    padding: 14px 16px;
+    padding: 16px 18px;
+  }
+  .memo-card h4 {
+    font-size: 15px;
   }
   .memo-form {
-    padding: 14px;
+    padding: 16px;
+  }
+  .memo-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .memo-form-actions .edit-btn {
+    width: 100%;
+    justify-content: center;
   }
   .memo-actions {
     flex-direction: column;
@@ -917,6 +1166,10 @@ footer {
   .memo-actions .edit-btn {
     width: 100%;
     justify-content: center;
+  }
+  .firebase-status {
+    padding: 12px 14px;
+    font-size: 13px;
   }
 }
 
@@ -933,5 +1186,29 @@ footer {
   }
   #map {
     height: 420px;
+  }
+  .memo-form {
+    padding: 14px;
+  }
+  .memo-form-actions .edit-btn,
+  .memo-card .memo-actions .edit-btn {
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+  .memo-card {
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .memo-card .link-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .tag-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  .firebase-status {
+    flex-direction: column;
+    gap: 8px;
   }
 }

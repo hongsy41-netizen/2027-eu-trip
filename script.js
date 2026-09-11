@@ -758,11 +758,13 @@ function initFirebase() {
   if (isPlaceholderConfig(FIREBASE_CONFIG)) {
     console.log('[firebase] placeholder config detected; using localStorage only.');
     FIREBASE_FALLBACK_REASON = 'Firebase 설정이 placeholder 상태입니다.';
+    showFirebaseStatusBanner();
     return;
   }
   if (typeof window === 'undefined' || !window._firebase) {
     FIREBASE_FALLBACK_REASON = 'Firebase SDK를 불러오지 못했습니다.';
     showToast('Firebase SDK를 불러오지 못했습니다. 오프라인 모드로 전환합니다.', 'error');
+    showFirebaseStatusBanner();
     return;
   }
   try {
@@ -775,6 +777,7 @@ function initFirebase() {
     fb.onAuthStateChanged(FB_AUTH, function (user) {
       if (user) {
         FIREBASE_READY = true;
+        hideFirebaseStatusBanner();
         attachMemoListener();
       } else {
         FIREBASE_READY = false;
@@ -783,17 +786,20 @@ function initFirebase() {
       console.error('[firebase] auth state error', err);
       showToast('Firebase 인증 상태 오류 — 오프라인 모드로 전환합니다.', 'error');
       FIREBASE_READY = false;
+      showFirebaseStatusBanner();
     });
 
     fb.signInAnonymously(FB_AUTH).catch(function (err) {
       console.error('[firebase] anonymous sign-in failed', err);
       showToast('Firebase 익명 로그인에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
       FIREBASE_READY = false;
+      showFirebaseStatusBanner();
     });
   } catch (err) {
     console.error('[firebase] init error', err);
     showToast('Firebase 초기화 오류 — 오프라인 모드로 전환합니다.', 'error');
     FIREBASE_READY = false;
+    showFirebaseStatusBanner();
   }
 }
 
@@ -823,6 +829,7 @@ function attachMemoListener() {
     console.error('[firebase] onValue error', err);
     showToast('Firebase 데이터 동기화에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
     FIREBASE_READY = false;
+    showFirebaseStatusBanner();
     loadMemosFromCache();
     renderMemoList();
     buildMemoFilter();
@@ -892,6 +899,16 @@ function resetData() {
 }
 
 /* ---- Toast notification ---- */
+function showFirebaseStatusBanner() {
+  const banner = document.getElementById('firebaseStatusBanner');
+  if (banner) banner.style.display = '';
+}
+
+function hideFirebaseStatusBanner() {
+  const banner = document.getElementById('firebaseStatusBanner');
+  if (banner) banner.style.display = 'none';
+}
+
 function showToast(msg, type) {
   const toast = document.createElement('div');
   toast.className = 'toast toast-' + (type || 'info');
@@ -1259,11 +1276,20 @@ function renderMemoForm() {
   const isEdit = !!MEMO_EDIT_ID;
   const memo = isEdit ? MEMOS.find(function (m) { return m.id === MEMO_EDIT_ID; }) : null;
   let html = '<div class="memo-form">';
-  html += '<input type="text" id="memoTitle" class="memo-input" placeholder="제목" value="' + (isEdit ? escapeHtml(memo.title) : '') + '">';
-  html += '<textarea id="memoContent" class="memo-textarea" placeholder="내용을 입력하세요..." rows="3">' + (isEdit ? escapeHtml(memo.content) : '') + '</textarea>';
-  html += '<input type="text" id="memoTags" class="memo-input" placeholder="태그 (쉼표로 구분, 예: 비엔나, 맛집)" value="' + (isEdit ? escapeHtml(memo.tags.join(', ')) : '') + '">';
-  html += '<div class="memo-actions">';
-  html += '<button class="edit-btn" id="memoSubmitBtn" type="button">' + (isEdit ? '💾 수정 완료' : '➕ 메모 추가') + '</button>';
+  html += '<div class="memo-form-row">';
+  html += '<label class="memo-form-label" for="memoTitle">제목</label>';
+  html += '<input type="text" id="memoTitle" class="memo-input" placeholder="예: 비엔나 맛집 후보" value="' + (isEdit ? escapeHtml(memo.title) : '') + '">';
+  html += '</div>';
+  html += '<div class="memo-form-row">';
+  html += '<label class="memo-form-label" for="memoContent">내용</label>';
+  html += '<textarea id="memoContent" class="memo-textarea" placeholder="기억해야 할 일정, 팁, 링크 등을 자유롭게 적어주세요..." rows="3">' + (isEdit ? escapeHtml(memo.content) : '') + '</textarea>';
+  html += '</div>';
+  html += '<div class="memo-form-row">';
+  html += '<label class="memo-form-label" for="memoTags">태그</label>';
+  html += '<input type="text" id="memoTags" class="memo-input" placeholder="쉼표로 구분, 예: 비엔나, 맛집, 체크리스트" value="' + (isEdit ? escapeHtml(memo.tags.join(', ')) : '') + '">';
+  html += '</div>';
+  html += '<div class="memo-form-actions">';
+  html += '<button class="edit-btn edit-btn-primary" id="memoSubmitBtn" type="button">' + (isEdit ? '💾 수정 완료' : '➕ 메모 추가') + '</button>';
   if (isEdit) {
     html += '<button class="edit-btn edit-btn-reset" id="memoCancelBtn" type="button">취소</button>';
   }

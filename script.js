@@ -699,7 +699,11 @@ const FALLBACK_DATA = {
 
 /* ---- Data Loading ---- */
 const STORAGE_KEY = 'euTrip2027_v1';
+const MEMO_STORAGE_KEY = 'euTrip2027_memos';
 let TRIP_DATA = null; // global ref for edit mode
+let MEMOS = [];
+let MEMO_EDIT_ID = null;
+const ACTIVE_FILTERS = { savedLinks: null, researchNotes: null, memo: null };
 
 async function loadData() {
   // 1. Check localStorage for saved edits
@@ -758,9 +762,12 @@ function badge(country) {
 
 /* ---- Hero ---- */
 function buildHero(d) {
+  const titleEl = document.getElementById('heroTitle');
+  const subEl = document.getElementById('heroSubtitle');
+  if (!titleEl || !subEl) return;
   const m = d.meta;
-  document.getElementById('heroTitle').textContent = m.title;
-  document.getElementById('heroSubtitle').textContent = m.subtitle;
+  titleEl.textContent = m.title;
+  subEl.textContent = m.subtitle;
 
   const stats = [
     { num: m.totalDays, label: '총 일수' },
@@ -785,6 +792,8 @@ function buildHero(d) {
 
 /* ---- Flights ---- */
 function buildFlights(d) {
+  const container = document.getElementById('flightContent');
+  if (!container) return;
   const f = d.flights;
   let html = '';
 
@@ -821,11 +830,13 @@ function buildFlights(d) {
   html += '</tbody></table>';
   html += '<div class="callout callout-warn"><b>🕐 ' + f.transitWarning + '</b></div>';
 
-  document.getElementById('flightContent').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Phases ---- */
 function buildPhases(d) {
+  const container = document.getElementById('phaseGrid');
+  if (!container) return;
   const html = d.phases.map(p => {
     const cls = 'country-' + p.country.toLowerCase();
     const tags = p.highlights.map(h => '<span class="tag">' + h + '</span>').join('');
@@ -837,11 +848,13 @@ function buildPhases(d) {
       '<div class="highlights">' + tags + '</div>' +
       '</div>';
   }).join('');
-  document.getElementById('phaseGrid').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Timeline ---- */
 function buildTimeline(d) {
+  const container = document.getElementById('timelineList');
+  if (!container) return;
   const html = d.days.map(day => {
     const cls = 'country-' + day.country.toLowerCase();
     return '<div class="timeline-item ' + cls + '">' +
@@ -853,13 +866,15 @@ function buildTimeline(d) {
       '<div class="timeline-nights">' + day.nights + (day.km !== '0' ? ' · ~' + day.km + 'km' : '') + '</div>' +
       '</div>';
   }).join('');
-  document.getElementById('timelineList').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Schedule Table ---- */
 let EDIT_MODE = false;
 
 function buildScheduleTable(d) {
+  const container = document.getElementById('scheduleTable');
+  if (!container) return;
   let html = '<thead><tr><th>Day</th><th>날짜</th><th>요일</th><th>출발</th><th>도착</th><th>거리</th><th>숙박</th><th>국가</th><th>비고</th></tr></thead><tbody>';
   let lastPhase = 0;
   let totalKm = 0;
@@ -897,11 +912,13 @@ function buildScheduleTable(d) {
 
   html += '<tr class="sum-row"><td colspan="5">합계</td><td>~' + totalKm + 'km</td><td>19박</td><td>4개국</td><td>참고값</td></tr>';
   html += '</tbody>';
-  document.getElementById('scheduleTable').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Rental ---- */
 function buildRental(d) {
+  const container = document.getElementById('rentalContent');
+  if (!container) return;
   const r = d.rental;
   let html = '<table><tbody>';
   html += '<tr><th>차종</th><td>' + r.carType + '</td></tr>';
@@ -922,39 +939,364 @@ function buildRental(d) {
   html += '<div class="callout callout-amber"><b>⚠️ 보험</b> — ' + r.insuranceWarning + '</div>';
   html += '<div class="callout callout-warn"><b>⚠️ 적재공간</b> — ' + r.capacityWarning + '</div>';
 
-  document.getElementById('rentalContent').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Accommodations ---- */
 function buildAccommodations(d) {
+  const container = document.getElementById('accommodationTable');
+  if (!container) return;
   let html = '<thead><tr><th>도시</th><th>박</th><th>기간</th><th>추천 지역</th><th>가족형 포인트</th><th>국가</th></tr></thead><tbody>';
   d.accommodations.forEach(a => {
     html += '<tr><td><b>' + a.city + '</b></td><td>' + a.nights + '</td><td>' + a.period + '</td><td style="text-align:left;">' + a.area + '</td><td style="text-align:left;">' + a.points + '</td><td>' + badge(a.country) + '</td></tr>';
   });
   html += '</tbody>';
-  document.getElementById('accommodationTable').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Warnings ---- */
 function buildWarnings(d) {
+  const container = document.getElementById('warnings');
+  if (!container) return;
   const html = d.warnings.map(w => {
     const cls = w.type === 'warn' ? 'callout-warn' : 'callout-note';
     const icon = w.type === 'warn' ? '⚠️' : '💡';
     return '<div class="callout ' + cls + '">' + icon + ' ' + w.text + '</div>';
   }).join('');
-  document.getElementById('warnings').innerHTML = html;
+  container.innerHTML = html;
 }
 
 /* ---- Tips ---- */
 function buildTips(d) {
+  const container = document.getElementById('tipsGrid');
+  if (!container) return;
   const html = d.tips.map(t => {
     return '<div class="tip-card"><span class="icon">' + t.icon + '</span><h4>' + t.title + '</h4><p>' + t.content + '</p></div>';
   }).join('');
-  document.getElementById('tipsGrid').innerHTML = html;
+  container.innerHTML = html;
+}
+
+/* ---- Curated Links & Reviews ---- */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+ .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function collectTags(items) {
+  const tags = new Set();
+  items.forEach(function (item) {
+    (item.tags || []).forEach(function (tag) { tags.add(tag); });
+  });
+  return Array.from(tags).sort();
+}
+
+function buildTagFilter(containerId, tags, activeTag, callback) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '<button class="tag-btn' + (activeTag ? '' : ' active') + '" data-tag="">전체</button>';
+  tags.forEach(function (tag) {
+    html += '<button class="tag-btn' + (activeTag === tag ? ' active' : '') + '" data-tag="' + escapeHtml(tag) + '">' + escapeHtml(tag) + '</button>';
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.tag-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      callback(this.dataset.tag);
+    });
+  });
+}
+
+function buildLinkCard(item) {
+  const tags = (item.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+  return '<div class="memo-card">' +
+    '<h4>' + escapeHtml(item.title) + '</h4>' +
+    '<div class="meta"><span class="tag">' + escapeHtml(item.source) + '</span></div>' +
+    '<p>' + escapeHtml(item.summary) + '</p>' +
+    '<div class="tags">' + tags + '</div>' +
+    '<a href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener" class="link-btn">링크 열기 ↗</a>' +
+    '</div>';
+}
+
+function buildSavedLinks(d) {
+  const container = document.getElementById('savedLinksSection');
+  if (!container) return;
+  const activeTag = ACTIVE_FILTERS.savedLinks;
+  const items = activeTag ? d.savedLinks.filter(function (item) { return item.tags.indexOf(activeTag) !== -1; }) : d.savedLinks;
+  if (items.length === 0) {
+    container.innerHTML = '<p class="memo-empty">필터에 맞는 저장 링크가 없습니다.</p>';
+  } else {
+    container.innerHTML = items.map(buildLinkCard).join('');
+  }
+}
+
+function buildBlogReviews(d) {
+  const container = document.getElementById('blogReviewsSection');
+  if (!container) return;
+  const activeTag = ACTIVE_FILTERS.savedLinks;
+  const items = activeTag ? d.blogReviews.filter(function (item) { return item.tags.indexOf(activeTag) !== -1; }) : d.blogReviews;
+  if (items.length === 0) {
+    container.innerHTML = '<p class="memo-empty">필터에 맞는 후기가 없습니다.</p>';
+  } else {
+    container.innerHTML = items.map(buildLinkCard).join('');
+  }
+}
+
+function buildSavedLinksFilter(d) {
+  const allTags = collectTags(d.savedLinks.concat(d.blogReviews));
+  buildTagFilter('savedLinksFilter', allTags, ACTIVE_FILTERS.savedLinks, function (tag) {
+    ACTIVE_FILTERS.savedLinks = tag || null;
+    buildSavedLinks(TRIP_DATA);
+    buildBlogReviews(TRIP_DATA);
+  });
+}
+
+function buildResearchNotes(d) {
+  const container = document.getElementById('researchNotesSection');
+  if (!container) return;
+  const activeTag = ACTIVE_FILTERS.researchNotes;
+  const items = activeTag ? d.researchNotes.filter(function (item) { return item.tags.indexOf(activeTag) !== -1; }) : d.researchNotes;
+  if (items.length === 0) {
+    container.innerHTML = '<p class="memo-empty">필터에 맞는 조사 노트가 없습니다.</p>';
+  } else {
+    container.innerHTML = items.map(function (item) {
+      const tags = (item.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+      return '<div class="memo-card">' +
+        '<h4>' + escapeHtml(item.title) + '</h4>' +
+        '<div class="meta"><span class="tag">' + escapeHtml(item.city) + '</span></div>' +
+        '<p>' + escapeHtml(item.content) + '</p>' +
+        '<div class="tags">' + tags + '</div>' +
+        '</div>';
+    }).join('');
+  }
+  const allTags = collectTags(d.researchNotes);
+  buildTagFilter('researchNotesFilter', allTags, ACTIVE_FILTERS.researchNotes, function (tag) {
+    ACTIVE_FILTERS.researchNotes = tag || null;
+    buildResearchNotes(TRIP_DATA);
+  });
+}
+
+/* ---- Memo Pad ---- */
+function initMemoPad(d) {
+  const formWrap = document.getElementById('memoFormWrap');
+  const listEl = document.getElementById('memoSection');
+  if (!formWrap || !listEl) return;
+
+  const saved = localStorage.getItem(MEMO_STORAGE_KEY);
+  if (saved) {
+    try {
+      MEMOS = JSON.parse(saved) || [];
+    } catch (e) { MEMOS = []; }
+  }
+  if (!MEMOS || MEMOS.length === 0) {
+    MEMOS = (d.sampleMemos || []).map(function (m) {
+      return { id: m.id, title: m.title, content: m.content, tags: m.tags.slice(), createdAt: m.createdAt };
+    });
+    saveMemos(false);
+  }
+
+  renderMemoForm();
+  renderMemoList();
+  buildMemoFilter();
+  bindExportImport();
+}
+
+function renderMemoForm() {
+  const formWrap = document.getElementById('memoFormWrap');
+  if (!formWrap) return;
+  const isEdit = !!MEMO_EDIT_ID;
+  const memo = isEdit ? MEMOS.find(function (m) { return m.id === MEMO_EDIT_ID; }) : null;
+  let html = '<div class="memo-form">';
+  html += '<input type="text" id="memoTitle" class="memo-input" placeholder="제목" value="' + (isEdit ? escapeHtml(memo.title) : '') + '">';
+  html += '<textarea id="memoContent" class="memo-textarea" placeholder="내용을 입력하세요..." rows="3">' + (isEdit ? escapeHtml(memo.content) : '') + '</textarea>';
+  html += '<input type="text" id="memoTags" class="memo-input" placeholder="태그 (쉼표로 구분, 예: 비엔나, 맛집)" value="' + (isEdit ? escapeHtml(memo.tags.join(', ')) : '') + '">';
+  html += '<div class="memo-actions">';
+  html += '<button class="edit-btn" id="memoSubmitBtn" type="button">' + (isEdit ? '💾 수정 완료' : '➕ 메모 추가') + '</button>';
+  if (isEdit) {
+    html += '<button class="edit-btn edit-btn-reset" id="memoCancelBtn" type="button">취소</button>';
+  }
+  html += '</div></div>';
+  formWrap.innerHTML = html;
+
+  document.getElementById('memoSubmitBtn').addEventListener('click', handleMemoSubmit);
+  if (isEdit) {
+    document.getElementById('memoCancelBtn').addEventListener('click', cancelMemoEdit);
+  }
+}
+
+function handleMemoSubmit() {
+  const title = document.getElementById('memoTitle').value.trim();
+  const content = document.getElementById('memoContent').value.trim();
+  const tagsRaw = document.getElementById('memoTags').value;
+  const tags = tagsRaw.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+
+  if (!title && !content) {
+    showToast('제목 또는 내용을 입력해 주세요.', 'error');
+    return;
+  }
+
+  if (MEMO_EDIT_ID) {
+    const idx = MEMOS.findIndex(function (m) { return m.id === MEMO_EDIT_ID; });
+    if (idx !== -1) {
+      MEMOS[idx].title = title;
+      MEMOS[idx].content = content;
+      MEMOS[idx].tags = tags;
+    }
+    MEMO_EDIT_ID = null;
+    showToast('메모가 수정되었습니다.', 'success');
+  } else {
+    MEMOS.unshift({
+      id: 'memo-' + Date.now(),
+      title: title,
+      content: content,
+      tags: tags,
+      createdAt: new Date().toISOString()
+    });
+    showToast('메모가 추가되었습니다.', 'success');
+  }
+  saveMemos(false);
+  renderMemoForm();
+  renderMemoList();
+  buildMemoFilter();
+}
+
+function cancelMemoEdit() {
+  MEMO_EDIT_ID = null;
+  renderMemoForm();
+}
+
+function editMemo(id) {
+  MEMO_EDIT_ID = id;
+  renderMemoForm();
+  const input = document.getElementById('memoTitle');
+  if (input) input.focus();
+}
+
+function deleteMemo(id) {
+  if (!confirm('이 메모를 삭제할까요?')) return;
+  MEMOS = MEMOS.filter(function (m) { return m.id !== id; });
+  if (MEMO_EDIT_ID === id) {
+    MEMO_EDIT_ID = null;
+    renderMemoForm();
+  }
+  saveMemos(false);
+  renderMemoList();
+  buildMemoFilter();
+  showToast('메모가 삭제되었습니다.', 'info');
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  } catch (e) { return ''; }
+}
+
+function renderMemoList() {
+  const container = document.getElementById('memoSection');
+  if (!container) return;
+  const activeTag = ACTIVE_FILTERS.memo;
+  const items = activeTag ? MEMOS.filter(function (m) { return m.tags.indexOf(activeTag) !== -1; }) : MEMOS;
+  if (items.length === 0) {
+    container.innerHTML = '<p class="memo-empty">메모가 없습니다. 첫 메모를 남겨보세요.</p>';
+    return;
+  }
+  container.innerHTML = items.map(function (m) {
+    const tags = m.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+    return '<div class="memo-card" data-id="' + m.id + '">' +
+      '<h4>' + escapeHtml(m.title) + '</h4>' +
+      '<p>' + escapeHtml(m.content) + '</p>' +
+      '<div class="tags">' + tags + '</div>' +
+      '<div class="memo-meta">' + formatDate(m.createdAt) + '</div>' +
+      '<div class="memo-actions">' +
+      '<button class="edit-btn memo-edit-btn" type="button" data-id="' + m.id + '">✏️ 수정</button>' +
+      '<button class="edit-btn edit-btn-reset memo-delete-btn" type="button" data-id="' + m.id + '">🗑️ 삭제</button>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+
+  container.querySelectorAll('.memo-edit-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { editMemo(this.dataset.id); });
+  });
+  container.querySelectorAll('.memo-delete-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { deleteMemo(this.dataset.id); });
+  });
+}
+
+function buildMemoFilter() {
+  const allTags = collectTags(MEMOS);
+  buildTagFilter('memoFilter', allTags, ACTIVE_FILTERS.memo, function (tag) {
+    ACTIVE_FILTERS.memo = tag || null;
+    renderMemoList();
+  });
+}
+
+function saveMemos(notify) {
+  try {
+    localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(MEMOS));
+    if (notify !== false) showToast('메모가 저장되었습니다.', 'success');
+  } catch (e) {
+    console.error('[memo] 저장 실패:', e);
+    showToast('메모 저장 실패 — 브라우저 저장공간을 확인하세요.', 'error');
+  }
+}
+
+function exportMemos() {
+  const dataStr = JSON.stringify(MEMOS, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'euTrip2027_memos_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('메모를 파일로 남겼습니다.', 'success');
+}
+
+function importMemos(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('invalid format');
+      MEMOS = imported;
+      saveMemos(false);
+      MEMO_EDIT_ID = null;
+      renderMemoForm();
+      renderMemoList();
+      buildMemoFilter();
+      showToast('메모를 가져왔습니다.', 'success');
+    } catch (err) {
+      console.error('[memo] import 실패:', err);
+      showToast('메모 가져오기 실패 — 올바른 JSON 파일인지 확인하세요.', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function bindExportImport() {
+  const exportBtn = document.getElementById('exportMemosBtn');
+  const importBtn = document.getElementById('importMemosBtn');
+  const importFile = document.getElementById('importMemosFile');
+  if (exportBtn) exportBtn.addEventListener('click', exportMemos);
+  if (importBtn && importFile) {
+    importBtn.addEventListener('click', function () { importFile.click(); });
+    importFile.addEventListener('change', function () {
+      importMemos(this.files[0]);
+      this.value = '';
+    });
+  }
 }
 
 /* ---- Map ---- */
 function initMap(d) {
+  const mapEl = document.getElementById('map');
+  const sidebarEl = document.getElementById('daySidebar');
+  if (!mapEl || !sidebarEl) return;
   const c = d.coords;
   const routePoints = d.route.map(k => c[k]).filter(Boolean);
 
@@ -1037,6 +1379,8 @@ function initMap(d) {
 
 /* ---- Budget ---- */
 function buildBudget(d) {
+  const container = document.getElementById('budgetContent');
+  if (!container) return;
   const b = d.budget;
   let total = 0;
   let confirmedTotal = 0;
@@ -1073,7 +1417,7 @@ function buildBudget(d) {
 
   html += '<div class="budget-summary" id="budgetSummary"></div>';
 
-  document.getElementById('budgetContent').innerHTML = html;
+  container.innerHTML = html;
 
   // Live total calculation
   function updateTotal() {
@@ -1217,6 +1561,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   buildBudget(TRIP_DATA);
   buildWarnings(TRIP_DATA);
   buildTips(TRIP_DATA);
+  buildSavedLinks(TRIP_DATA);
+  buildBlogReviews(TRIP_DATA);
+  buildSavedLinksFilter(TRIP_DATA);
+  buildResearchNotes(TRIP_DATA);
+  initMemoPad(TRIP_DATA);
   initMap(TRIP_DATA);
 
   // Edit button listeners

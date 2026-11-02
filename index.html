@@ -6,6 +6,10 @@
 <title>2027 유럽 여행 — 항공 &amp; 지상 동선 (최종 확정)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✈️%3C/text%3E%3C/svg%3E">
 <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✈️%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="style.css">
 <!-- Firebase v9 modular SDK (loaded as ES modules from CDN; no bundler required) -->
 <script type="module">
@@ -17,48 +21,47 @@
     getDatabase, ref, onValue, push, update, remove, off
   };
 </script>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; background:#f4f6f9; color:#1f2d3d; line-height:1.6; padding:24px; }
-  .container { max-width:1100px; margin:0 auto; }
-  h1 { font-size:25px; color:#1a3e72; margin-bottom:6px; }
-  .subtitle { color:#64748b; margin-bottom:22px; font-size:14px; }
-  h2 { font-size:20px; color:#1a3e72; margin:30px 0 14px; padding-bottom:8px; border-bottom:3px solid #e2e8f0; }
-  h3 { font-size:16px; color:#334155; margin:18px 0 10px; }
-  .card { background:#fff; border-radius:12px; padding:24px 26px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,.08); overflow-x:auto; }
-  table { width:100%; border-collapse:separate; border-spacing:0; margin:14px 0; font-size:14px; }
-  th, td { border:1px solid #dbe3ec; padding:11px 10px; text-align:center; vertical-align:middle; line-height:1.5; }
-  th { background:#edf2f8; color:#1a3e72; font-weight:700; font-size:14px; }
-  td:first-child, th:first-child { text-align:left; }
-  tbody tr:nth-child(even) { background:#fafbfd; }
-  tbody tr:hover { background:#f1f7ff; }
-  .tag { display:inline-block; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; }
-  .direct { background:#dcfce7; color:#166534; }
-  .stop { background:#fee2e2; color:#991b1b; }
-  .path { background:#e0e7ff; color:#3730a3; }
-  .route { background:#f8fafc; border-radius:8px; padding:14px 18px; text-align:center; font-size:14px; letter-spacing:.5px; margin:12px 0; }
-  .note { background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
-  .tip { background:#ecfeff; border-left:4px solid #06b6d4; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
-  .warn { background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
-  .dim { color:#64748b; }
-  .flight { font-size:14px; }
-  .footer { text-align:center; color:#94a3b8; font-size:12px; margin-top:28px; }
-  .map-card { padding:10px; }
-  #routeMap { height:560px; width:100%; border-radius:10px; background:#e9eef3; }
-  .leaflet-popup { font-family:-apple-system,"Malgun Gothic",sans-serif; }
-  .legend { background:#fff; border:1px solid #dbe3ec; border-radius:8px; padding:10px 14px; font-size:12px; color:#334155; margin-top:10px; }
-  .legend b { color:#1a3e72; }
-  @media (max-width:640px){ table{font-size:12px;} th,td{padding:6px;} body{padding:12px;} #routeMap { height:440px; } }
-</style>
 </head>
 <body>
+
+<nav class="site-nav">
+  <div class="site-nav__inner">
+    <span class="site-nav__brand">EUROPE 2027</span>
+    <div class="site-nav__links">
+      <a href="#flight">항공</a>
+      <a href="#ground">동선</a>
+      <a href="#map">지도</a>
+      <a href="#rental">렌트카</a>
+      <a href="#transit">교통무료</a>
+      <a href="#stay">숙소</a>
+      <a href="#parking">주차</a>
+      <a href="#reviews">후기</a>
+      <a href="#links">링크</a>
+      <a href="#notes">노트</a>
+      <a href="#memo">메모장</a>
+    </div>
+  </div>
+</nav>
+
 <div class="container">
 
-<h1>🌍 2027 유럽 여행 — 항공 &amp; 지상 동선</h1>
-<p class="subtitle">부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프 (뮌헨 제외) · <b>실제 예약 기준 확정안</b></p>
+<header class="hero">
+  <p class="hero__eyebrow">2027 · Europe Road Trip</p>
+  <h1><span class="h1-ico" aria-hidden="true">🌍</span>2027 유럽 여행<span class="h1-sub">항공 &amp; 지상 동선 · 최종 확정</span></h1>
+  <p class="subtitle">부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프 (뮌헨 제외) · <b>실제 예약 기준 확정안</b></p>
+  <div class="facts">
+    <div class="facts__item"><span class="facts__label">여행 기간</span><span class="facts__value">7/17 – 8/7<small>21일</small></span></div>
+    <div class="facts__item"><span class="facts__label">숙박</span><span class="facts__value">19박<small>8개 도시</small></span></div>
+    <div class="facts__item"><span class="facts__label">항공</span><span class="facts__value">BUD in/out<small>베이징 경유</small></span></div>
+    <div class="facts__item"><span class="facts__label">이동</span><span class="facts__value">렌트카 1대<small>5인 · 약 2,000km</small></span></div>
+  </div>
+</header>
 
 <!-- ============ 항공 일정 ============ -->
-<h2>✈ 항공 일정 (최종 확정)</h2>
+<section class="sec" id="flight">
+<div class="sec__num">01</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">✈</span>항공 일정 <span class="sec-aside">(최종 확정)</span></h2>
 <div class="card">
 <table>
   <tr><th>방향</th><th>날짜</th><th>구간</th><th>항공편</th><th>기종</th><th>출발 → 도착</th><th>비행시간</th><th>좌석</th></tr>
@@ -107,10 +110,25 @@
 <div class="warn"><b>🕐 베이징 환승 11h05m</b> — 시내 나들이 가능. 한국 국적은 물비자 경유 대상이라 가능하나, <b>수하물은 체크쓰루</b>로 부다페스트까지 걸고, 여권 지참 + 입국시 임시입국허가 카드 작성 필요. 환승 대기로 공항에만 있어도 묘방.</div>
 </div>
 
+</div></section>
+
 <!-- ============ 지상 동선 ============ -->
-<h2>🗺️ 지상 동선 &amp; 일정</h2>
+<section class="sec" id="ground">
+<div class="sec__num">02</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">🗺️</span>지상 동선 &amp; 일정</h2>
 <div class="card">
-<div class="route">✈ 부다페스트(BUD) → <b>비엔나(3박)</b> → 프라하(2박) → 체스키크룸로프(1박) → <b>고사우(3박, Hallstatt·잘츠부르크 순회)</b> → <b>돌로미티 서부(3박)</b> → <b>돌로미티 동부(3박)</b> → 그라츠(1박) → 부다페스트(3박) ✈</div>
+<div class="route">
+  <div class="route__stop route__stop--end"><span class="route__name">부다페스트</span><span class="route__meta">BUD · 출발/귀국</span></div>
+  <div class="route__stop"><span class="route__name">비엔나</span><span class="route__meta">3박</span></div>
+  <div class="route__stop"><span class="route__name">프라하</span><span class="route__meta">2박</span></div>
+  <div class="route__stop"><span class="route__name">체스키크룸로프</span><span class="route__meta">1박</span></div>
+  <div class="route__stop"><span class="route__name">고사우</span><span class="route__meta">3박</span><span class="route__note">Hallstatt·잘츠부르크 순회</span></div>
+  <div class="route__stop"><span class="route__name">돌로미티 서부</span><span class="route__meta">3박</span></div>
+  <div class="route__stop"><span class="route__name">돌로미티 동부</span><span class="route__meta">3박</span></div>
+  <div class="route__stop"><span class="route__name">그라츠</span><span class="route__meta">1박</span></div>
+  <div class="route__stop route__stop--end"><span class="route__name">부다페스트</span><span class="route__meta">3박</span></div>
+</div>
 
 <h3>날짜별 일정</h3>
 <table>
@@ -151,65 +169,149 @@
 <div class="warn"><b>⚠️ 1일차 피로 완화</b> — 7/18은 비엔나 숙소(1090 josef's home)에 도착해 짐만 내리고 반나절 휴식 후, 오후부터 가벼운 시내 관광. 밤샘 비행 직후 <b>3h 운전</b> 후 곧바로 풀 일정은 피함. 차량은 <b>일요일 노상 무료 주차 → 저녁에 P+R Spittelau로 이동</b>(아래 비엔나 주차 전략 참고).</div>
 <div class="tip"><b>💡 렌트카</b> — 동일 공항(BUD) in/out → 원웨이 배차료 0원. 헝가리·오스트리아·체코·이탈리아 <b>4개국 전부 포함</b> 계약인지 확인(체코·이탈리아 통과료 별도인 경우 많음).</div>
 <div class="warn"><b>⚠️ Hallstatt·Salzburg 기지 통합</b> — 5인 대형차 + 성수기에는 Hallstatt 마을 내 숙소/주차가 희소·비쌈. <b>고사우(Gosau)</b> 기지로 3박을 묶어 Hallstatt(30min)·잘츠부르크(1h) 일일순회. 숙소 폭, 주차, 가격 모두 유리하고 돌로미티 이동도 더 짧음.</div>
+</div>
+</div></section>
 
 <!-- ============ 동선 지도 ============ -->
-<h2>🗺️ 동선 지도</h2>
+<section class="sec" id="map">
+<div class="sec__num">03</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">🗺️</span>동선 지도</h2>
 <div class="card map-card">
 <div id="routeMap"></div>
 <div class="legend">
-<b>범례</b> — ① 다뉴브 강변 유럽 도시들 · <b>▪ 건지</b>는 정차 도시, <b>선</b>은 시계방향 이동 루트 (출발·복귀 = 부다페스트). 각 마커를 누륾 도시명·숙박 일수가 표시됩니다. <span class="dim">(오픈스트리트맵 지도 · Leaflet)</span>
+<b>범례</b> — 번호 = 정차 순서(①~⑧), <b>실선</b> = 실제 도로 주행 경로, 점선 = 직선 연결(경로 로드 실패 시). 마커에 마우스를 올리면 도시명, 누르면 숙박 일수·다음 구간이 표시됩니다. <span class="dim">(OpenStreetMap · CARTO · OSRM)</span><span id="mapStatus" class="map-status">경로 불러오는 중…</span>
 </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>#routeMap.leaflet-container a.leaflet-popup-close-button { display:none; }</style>
 <script>
 (function(){
   // 순서: 출발(부다페스트공항) → 비엔나 → 프라하 → 크룸로프 → 고사우 → 돌로미티 서부 → 돌로미티 동부 → 그라츠 → 복귀(부다페스트관광)
   const stops = [
     { name:"부다페스트 (출발·귀국)", sub:"BUD 공항 · 도착 7/18 → 출발 8/6 · → 비엔나 3h 1min", n:"✈", lat:47.4298, lng:19.2611 },
-    { name:"비엔나", sub:"7/18–20 · 3박 · → 프라하 3h 49min", n:"①", lat:48.2082, lng:16.3738 },
-    { name:"프라하", sub:"7/21–22 · 2박 · → 크룸로프 1h 56min", n:"②", lat:50.0755, lng:14.4378 },
-    { name:"체스키크룸로프", sub:"7/23 · 1박 · → 고사우 2h 51min", n:"③", lat:48.8107, lng:14.3176 },
-    { name:"고사우", sub:"7/24–26 · 3박 · Hallstatt·잘츠부르크 순회 · → 서부 4h 39min", n:"④", lat:47.5833, lng:13.5333 },
-    { name:"돌로미티 서부", sub:"7/27–29 · 3박 · Ponte Nova/Val d'Ega · → 동부 2h 41min", n:"⑤", lat:46.4500, lng:11.5500 },
-    { name:"돌로미티 동부", sub:"7/30–8/1 · 3박 · San Vito di Cadore · → 그라츠 4h 43min", n:"⑥", lat:46.4550, lng:12.2070 },
-    { name:"그라츠", sub:"8/2 · 1박 · → 부다페스트 3h 50min", n:"⑦", lat:47.0707, lng:15.4395 },
-    { name:"부다페스트 (관광)", sub:"8/3–5 · 3박 · 렌트 반납 → 공항", n:"⑧", lat:47.4979, lng:19.0402 }
+    { name:"비엔나", sub:"7/18–20 · 3박 · → 프라하 3h 49min", n:"1", lat:48.2082, lng:16.3738 },
+    { name:"프라하", sub:"7/21–22 · 2박 · → 크룸로프 1h 56min", n:"2", lat:50.0755, lng:14.4378 },
+    { name:"체스키크룸로프", sub:"7/23 · 1박 · → 고사우 2h 51min", n:"3", lat:48.8107, lng:14.3176 },
+    { name:"고사우", sub:"7/24–26 · 3박 · Hallstatt·잘츠부르크 순회 · → 서부 4h 39min", n:"4", lat:47.5833, lng:13.5333 },
+    { name:"돌로미티 서부", sub:"7/27–29 · 3박 · Ponte Nova/Val d'Ega · → 동부 2h 41min", n:"5", lat:46.4500, lng:11.5500 },
+    { name:"돌로미티 동부", sub:"7/30–8/1 · 3박 · San Vito di Cadore · → 그라츠 4h 43min", n:"6", lat:46.4550, lng:12.2070 },
+    { name:"그라츠", sub:"8/2 · 1박 · → 부다페스트 3h 50min", n:"7", lat:47.0707, lng:15.4395 },
+    { name:"부다페스트 (관광)", sub:"8/3–5 · 3박 · 렌트 반납 → 공항", n:"8", lat:47.4979, lng:19.0402 }
   ];
 
-  const map = L.map('routeMap', { scrollWheelZoom:true });
-  map.setView([47.5, 15.0], 6);
+  const ACCENT = '#A8492B';
+  const map = L.map('routeMap', { scrollWheelZoom:false, zoomSnap:0.25, zoomControl:true });
+  map.setView([47.6, 15.2], 6);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap contributors'
+  // 실제 지도 타일 (CARTO Voyager — 도로·지형이 읽기 쉬운 스타일)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
   }).addTo(map);
+  L.control.scale({ imperial:false, position:'bottomleft' }).addTo(map);
 
-  // 동선 (폴리라인) — 클릭 안 되는 배경선
-  const path = stops.map(function(s){ return [s.lat, s.lng]; });
-  L.polyline(path, { color:'#2563eb', weight:4, opacity:0.85, dashArray:'2,8' }).addTo(map);
-  L.marker(path[0]).setOpacity(0); // 루프 시작/종료 강조용 (투명)
+  const pts = stops.map(function(s){ return [s.lat, s.lng]; });
+  const bounds = L.latLngBounds(pts).pad(0.12);
 
-  // 각 정차 마커
+  // 경로 로드 전/실패 시: 직선 연결
+  const fallback = L.polyline(pts, { color:ACCENT, weight:2, opacity:.45, dashArray:'5,9' }).addTo(map);
+
+  // 정차 마커
   stops.forEach(function(s, i){
     const isEnd = (i === 0 || i === stops.length-1);
-    const iconSize = isEnd ? [34,34] : [30,34];
-    const html = '<div style="width:'+iconSize[0]+'px;height:'+iconSize[1]+'px;background:'+(isEnd?'#0f766e':'#2563eb')+';color:#fff;border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3)"><span style="transform:rotate(45deg);font-size:13px;font-weight:700">'+s.n+'</span></div>';
-    const icon = L.divIcon({ html:html, className:'', iconSize:iconSize, iconAnchor:[iconSize[0]/2, iconSize[1]] });
-    L.marker([s.lat,s.lng], { icon:icon }).addTo(map).bindPopup(
-      '<b style="font-size:15px;color:#1a3e72">'+s.name+'</b><br><span style="color:#64748b">'+s.sub+'</span>'
-    );
+    const icon = L.divIcon({
+      className:'',
+      html:'<div class="rt-pin' + (isEnd ? ' rt-pin--end' : '') + '">' + s.n + '</div>',
+      iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-16]
+    });
+    L.marker([s.lat, s.lng], { icon:icon, title:s.name })
+      .addTo(map)
+      .bindTooltip(s.name, { direction:'top', offset:[0,-15], className:'rt-tip' })
+      .bindPopup('<b class="rt-pop-name">' + s.name + '</b><span class="rt-pop-sub">' + s.sub + '</span>');
   });
 
-  // 모든 숙박 위치로 자동 확대 (루프 전체 보기)
-  map.fitBounds(L.latLngBounds(path).pad(0.12));
+  map.fitBounds(bounds);
+
+  function setStatus(t){
+    const el = document.getElementById('mapStatus');
+    if(el) el.textContent = t;
+  }
+
+  // 실제 도로 경로 — OSRM(OpenStreetMap 라우팅) 1회 요청으로 8개 구간 전체
+  const osrm = 'https://router.project-osrm.org/route/v1/driving/' +
+    stops.map(function(s){ return s.lng.toFixed(5) + ',' + s.lat.toFixed(5); }).join(';') +
+    '?overview=full&geometries=geojson&continue_straight=false';
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(function(){ ctrl.abort(); }, 9000);
+
+  fetch(osrm, { signal: ctrl.signal })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function(data){
+      clearTimeout(timer);
+      const route = data && data.routes && data.routes[0];
+      if(!route || !route.geometry) throw new Error('no geometry');
+      const line = route.geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
+
+      map.removeLayer(fallback);
+      L.polyline(line, { color:'#FFFFFF', weight:8, opacity:.9, lineCap:'round', lineJoin:'round' }).addTo(map);
+      L.polyline(line, { color:ACCENT, weight:3.5, opacity:.95, lineCap:'round', lineJoin:'round' }).addTo(map);
+
+      addArrows(line);
+      setStatus('실제 도로 경로 표시 중 · ' + route.legs.length + '개 구간');
+    })
+    .catch(function(err){
+      clearTimeout(timer);
+      addArrows(pts);
+      setStatus('경로 서버 응답 없음 — 직선 연결로 표시');
+      if(window.console) console.warn('[routeMap] OSRM 실패:', err.message);
+    });
+
+  // 진행 방향 화살표 (구간 중간 지점에 배치)
+  function addArrows(line){
+    const idx = [];
+    stops.forEach(function(s){
+      let best = 0, bestD = Infinity;
+      for(let i = 0; i < line.length; i++){
+        const d = Math.pow(line[i][0] - s.lat, 2) + Math.pow(line[i][1] - s.lng, 2);
+        if(d < bestD){ bestD = d; best = i; }
+      }
+      idx.push(best);
+    });
+    for(let k = 0; k < idx.length - 1; k++){
+      const a = idx[k], b = idx[k+1];
+      if(b - a < 6) continue;
+      const m = Math.floor((a + b) / 2);
+      const bearing = getBearing(line[m], line[m+1] || line[m-1]);
+      L.marker(line[m], {
+        interactive:false,
+        icon: L.divIcon({
+          className:'',
+          html:'<div class="rt-arrow" style="transform:rotate(' + bearing.toFixed(0) + 'deg)"></div>',
+          iconSize:[10,10], iconAnchor:[5,5]
+        })
+      }).addTo(map);
+    }
+  }
+
+  function getBearing(p1, p2){
+    const toR = Math.PI/180, toD = 180/Math.PI;
+    const y = Math.sin((p2[1]-p1[1])*toR) * Math.cos(p2[0]*toR);
+    const x = Math.cos(p1[0]*toR)*Math.sin(p2[0]*toR) - Math.sin(p1[0]*toR)*Math.cos(p2[0]*toR)*Math.cos((p2[1]-p1[1])*toR);
+    return (Math.atan2(y, x) * toD + 360) % 360;
+  }
 })();
 </script>
 
+</div></section>
+
 <!-- ============ 렌트카 ============ -->
-<h2>🚐 렌트카 (예약 정보)</h2>
+<section class="sec" id="rental">
+<div class="sec__num">04</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">🚐</span>렌트카 <span class="sec-aside">(예약 정보)</span></h2>
 <div class="card">
 <table>
   <tr><th>항목</th><th>내용</th></tr>
@@ -236,8 +338,13 @@
 <div class="warn"><b>⚠️ 인 × 짐 & 7인승</b> — 5인 + 23kg 수하물 5개면 프로에이스급이 적당. 다만 마지막 3번째 열을 짐으로 쓰거나, 최소 <b>길이 확보</b> 확인 필요. 국경 통과(헝가리·오스트리아·체코·이탈리아) 수수료 별도 인지 확인.</div>
 </div>
 
+</div></section>
+
 <!-- ============ 대중교통 무료 제도 (65세 이상·아동) ============ -->
-<h2>🎫 65세 이상·아동 대중교통 무료 제도</h2>
+<section class="sec" id="transit">
+<div class="sec__num">05</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">🎫</span>65세 이상·아동 대중교통 무료 제도</h2>
 <div class="card">
 <table>
   <tr><th>도시</th><th>대상</th><th>혜택</th><th>증빙 / 유의사항</th></tr>
@@ -252,8 +359,13 @@
 <div class="note"><b>📎 공식 참고</b> — 부다페스트 BKK: <a href="https://bkk.hu/downloads/43410/" target="_blank">bkk.hu/downloads/43410</a> · 프라하 PID: <a href="https://pid.cz/en/fares/discounted-fares/" target="_blank">pid.cz/en/fares/discounted-fares</a></div>
 </div>
 
+</div></section>
+
 <!-- ============ 숙소 (가족형) ============ -->
-<h2>🏠 확정 숙소 (실제 예약 기준)</h2>
+<section class="sec" id="stay">
+<div class="sec__num">06</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">🏠</span>확정 숙소 <span class="sec-aside">(실제 예약 기준)</span></h2>
 <div class="card">
 <p class="dim" style="margin-bottom:10px;">5인 가족 + 렌트카 기준. 아래는 <b>확정 예약</b>이며, 중복 예약은 별도로 정리해 취소 예정.</p>
 <table>
@@ -281,8 +393,13 @@
 <div class="warn"><b>⚠️ 일정 시점(2027년 7월~8월)은 유럽 피크시즌</b> — 할슈타트·돌로미티는 <b>2~3달 전에 풀매진</b>되어. 지금부터 발권 시점 기준으로 <b>예약 가능한 곳부터 순차 확보</b>하는 걸 권장. 무료취소 있는 항공·렌트로 예약 확정 후 숙소를 잡는 게 안전.</div>
 </div>
 
+</div></section>
+
 <!-- ============ 비엔나 주차 전략 ============ -->
-<h2 id="viennaParking">🅿️ 비엔나 주차 전략 (josef's home 3박 · 7/18–21)</h2>
+<section class="sec" id="parking">
+<div class="sec__num">07</div>
+<div class="sec__body">
+<h2 id="viennaParking"><span class="ico" aria-hidden="true">🅿️</span>비엔나 주차 전략 <span class="sec-aside">(josef's home 3박 · 7/18–21)</span></h2>
 <div class="card">
 <p class="dim" style="margin-bottom:10px;">결론: <b>차는 P+R Spittelau에 세워두고, 시내는 U6·트램으로</b>. 숙소 자체에는 주차가 없고, 빈은 전역이 단속구역이라 노상 장기주차가 불가능합니다.</p>
 
@@ -349,8 +466,13 @@
 <div class="tip"><b>💡 대중교통</b> — 7/18 오후~7/21 오전은 <b>72시간권 1장</b>에 딱 맞습니다(2026년 기준 €17.10). 65세 이상은 빈에서 <b>무료 아님</b>, 6~15세 아동은 무료.</div>
 </div>
 
+</div></section>
+
 <!-- ============ 실제 여행 후기 ============ -->
-<h2>📖 실제 여행 후기</h2>
+<section class="sec" id="reviews">
+<div class="sec__num">08</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">📖</span>실제 여행 후기</h2>
 <div class="card">
 <table>
   <tr><th>후기</th><th>일정/인원/차량</th><th>핵심 팁</th></tr>
@@ -473,8 +595,13 @@
 <div class="note"><b>📝 후기 추가 안내</b> — 이 표는 사용자가 제공한 후기 링크를 중심으로 정리한 것입니다. 추가 후기 링크가 있으면 아래 마크다운 파일이나 이 표에 계속 추가할 수 있습니다.</div>
 </div>
 
+</div></section>
+
 <!-- ============ 저장 링크 & 후기 ============ -->
-<h2>📌 저장 링크 &amp; 후기</h2>
+<section class="sec" id="links">
+<div class="sec__num">09</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">📌</span>저장 링크 &amp; 후기</h2>
 <div class="card">
   <div class="tag-filter" id="savedLinksFilter"></div>
   <div id="savedLinksSection"></div>
@@ -482,15 +609,25 @@
   <div id="blogReviewsSection"></div>
 </div>
 
+</div></section>
+
 <!-- ============ 조사 노트 ============ -->
-<h2>📝 조사 노트</h2>
+<section class="sec" id="notes">
+<div class="sec__num">10</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">📝</span>조사 노트</h2>
 <div class="card">
   <div class="tag-filter" id="researchNotesFilter"></div>
   <div id="researchNotesSection"></div>
 </div>
 
+</div></section>
+
 <!-- ============ 내 메모장 ============ -->
-<h2>✏️ 내 메모장</h2>
+<section class="sec" id="memo">
+<div class="sec__num">11</div>
+<div class="sec__body">
+<h2><span class="ico" aria-hidden="true">✏️</span>내 메모장</h2>
 <div class="card">
   <div class="note" style="margin-bottom:14px;">
     <b>🔥 Firebase 메모장</b> — 이 메모장은 Firebase Realtime Database를 사용합니다. 아래 placeholder를 실제 Firebase 설정값으로 교체하세요.
@@ -511,6 +648,8 @@
     <input type="file" id="importMemosFile" accept=".json" style="display:none;">
   </div>
 </div>
+
+</div></section>
 
 <p class="footer">2027 유럽 여행 정리 · 항공(중국국제항공)·렌트카(토요타 프로에이스) 확정 기준 · 숙소는 가족형 권장안이며 실제 예약·가격은 추후 확인 필요</p>
 

@@ -11,16 +11,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="style.css?v=20261102a">
-<!-- Firebase v9 modular SDK (loaded as ES modules from CDN; no bundler required) -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-  import { getDatabase, ref, onValue, push, update, remove, off } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
-  window._firebase = {
-    initializeApp, getAuth, signInAnonymously, onAuthStateChanged,
-    getDatabase, ref, onValue, push, update, remove, off
-  };
-</script>
 </head>
 <body>
 
@@ -38,7 +28,7 @@
       <a href="#reviews">후기</a>
       <a href="#links">링크</a>
       <a href="#notes">노트</a>
-      <a href="#memo">메모장</a>
+      <a href="#memo">공유 메모장</a>
     </div>
   </div>
 </nav>
@@ -638,28 +628,27 @@
 
 </div></section>
 
-<!-- ============ 내 메모장 ============ -->
+<!-- ============ 여행 공유 메모장 ============ -->
 <section class="sec" id="memo">
 <div class="sec__num">11</div>
 <div class="sec__body">
-<h2><span class="ico" aria-hidden="true">✏️</span>내 메모장</h2>
+<h2><span class="ico" aria-hidden="true">💬</span>여행 공유 메모장</h2>
 <div class="card">
-  <div class="note" style="margin-bottom:14px;">
-    <b>🔥 Firebase 메모장</b> — 이 메모장은 Firebase Realtime Database를 사용합니다. 아래 placeholder를 실제 Firebase 설정값으로 교체하세요.
-  </div>
-  <div id="firebaseStatusBanner" class="firebase-status" role="status" aria-live="polite" style="display:none;">
-    <span class="firebase-status-icon">💡</span>
-    <div class="firebase-status-body">
-      <b>Firebase 연결이 꺼져 있어 로컬 모드로 동작 중입니다.</b>
-      <span>메모는 이 브라우저에 임시 저장되며, 여러 기기에서 동기화하려면 Firebase Console에서 <b>익명 로그인(Anonymous)</b>과 <b>Realtime Database</b>를 활성화해 주세요.</span>
+  <div class="note" style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div>
+      <b>☁️ 실시간 클라우드 공유</b> — 여행 동행자 누구나 접속해서 메모와 의견을 남기고 실시간으로 확인할 수 있습니다.
     </div>
+    <button class="edit-btn" id="refreshMemosBtn" type="button" style="padding:5px 12px; font-size:12.5px;">🔄 새로고침</button>
+  </div>
+  <div id="memoSyncStatus" style="font-size:12.5px; color:#2e7d32; margin-bottom:14px; display:flex; align-items:center; gap:6px; font-weight:500;">
+    <span id="memoSyncDot">🟢</span> <span id="memoSyncText">실시간 클라우드 동기화 연결됨</span>
   </div>
   <div id="memoFormWrap"></div>
   <div class="tag-filter" id="memoFilter"></div>
   <div id="memoSection"></div>
-  <div class="memo-actions" style="margin-top:16px;">
-    <button class="edit-btn" id="exportMemosBtn" type="button">📤 메모 저장하기</button>
-    <button class="edit-btn" id="importMemosBtn" type="button">📥 메모 가져오기</button>
+  <div class="memo-actions" style="margin-top:18px;">
+    <button class="edit-btn" id="exportMemosBtn" type="button">📤 메모 백업 저장</button>
+    <button class="edit-btn" id="importMemosBtn" type="button">📥 백업 불러오기</button>
     <input type="file" id="importMemosFile" accept=".json" style="display:none;">
   </div>
 </div>

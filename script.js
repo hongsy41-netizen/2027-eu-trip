@@ -1,43 +1,7 @@
 /* 2027 EU Trip Portal — script.js
  * Data loaded from data/trips.json (GitHub Pages) with embedded fallback (file://).
- *
- * ---- Firebase Realtime Database 설정 (PLACEHOLDER) ----
- * 1. https://console.firebase.google.com/ 에서 새 프로젝트를 만듭니다.
- * 2. ⚙️ (프로젝트 개요 옆 톱니바퀴) → 프로젝트 설정 → 일반 → 내 앱의
- *    Firebase SDK snippet에서 아래 값들을 복사해 붙여넣으세요.
- *    - apiKey
- *    - authDomain
- *    - databaseURL  (Realtime Database URL)
- *    - projectId
- *    - storageBucket
- *    - messagingSenderId
- *    - appId
- * 3. Realtime Database를 생성하고 Rules 탭에서 아래 규칙을 적용하세요.
- *
- *    {
- *      "rules": {
- *        ".read": false,
- *        ".write": false,
- *        "memos": {
- *          ".read": "auth != null",
- *          ".write": "auth != null"
- *        }
- *      }
- *    }
- *
- * 4. Authentication → Sign-in method → 익명(Anonymous) 로그인을 활성화하세요.
- * -------------------------------------------------------
+ * Cloud Shared Memo Pad powered by MantleDB (https://mantledb.sh)
  */
-const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyCCI45967MMBof-21FD9ijxuzV4suk6zBQ',
-  authDomain: 'eu-trip-2027.firebaseapp.com',
-  databaseURL: 'https://eu-trip-2027-default-rtdb.firebaseio.com/',
-  projectId: 'eu-trip-2027',
-  storageBucket: 'eu-trip-2027.firebasestorage.app',
-  messagingSenderId: '821434723513',
-  appId: '1:821434723513:web:be4456e9cbb54f9c11bf68'
-};
-
 const FALLBACK_DATA = {
   "meta": {
     "title": "2027 유럽 여행 — 항공 & 지상 동선",
@@ -741,99 +705,64 @@ let MEMOS = [];
 let MEMO_EDIT_ID = null;
 const ACTIVE_FILTERS = { savedLinks: null, researchNotes: null, memo: null };
 
-/* ---- Firebase state ---- */
-let FB_APP = null;
-let FB_AUTH = null;
-let FB_DB = null;
-let FB_MEMOS_REF = null;
-let FB_UNSUBSCRIBE = null;
-let FIREBASE_READY = false;
-let FIREBASE_FALLBACK_REASON = '';
+/* ---- Cloud Shared Memo state (MantleDB) ---- */
+const CLOUD_MEMO_API = 'https://mantledb.sh/v2/hongsy41-eu-trip/memos';
+let CLOUD_SYNC_TIMER = null;
 
-function isPlaceholderConfig(cfg) {
-  return !cfg || String(cfg.apiKey).indexOf('YOUR_') === 0 || String(cfg.databaseURL).indexOf('https://YOUR_') === 0;
-}
-
-function initFirebase() {
-  if (isPlaceholderConfig(FIREBASE_CONFIG)) {
-    console.log('[firebase] placeholder config detected; using localStorage only.');
-    FIREBASE_FALLBACK_REASON = 'Firebase 설정이 placeholder 상태입니다.';
-    showFirebaseStatusBanner();
-    return;
-  }
-  if (typeof window === 'undefined' || !window._firebase) {
-    FIREBASE_FALLBACK_REASON = 'Firebase SDK를 불러오지 못했습니다.';
-    showToast('Firebase SDK를 불러오지 못했습니다. 오프라인 모드로 전환합니다.', 'error');
-    showFirebaseStatusBanner();
-    return;
-  }
+async function fetchMemosFromCloud(silent = false) {
+  const statusText = document.getElementById('memoSyncText');
+  const statusDot = document.getElementById('memoSyncDot');
+  if (statusText && !silent) statusText.textContent = '클라우드 동기화 중...';
   try {
-    const fb = window._firebase;
-    FB_APP = fb.initializeApp(FIREBASE_CONFIG);
-    FB_AUTH = fb.getAuth(FB_APP);
-    FB_DB = fb.getDatabase(FB_APP);
-    FB_MEMOS_REF = fb.ref(FB_DB, 'memos');
-
-    fb.onAuthStateChanged(FB_AUTH, function (user) {
-      if (user) {
-        FIREBASE_READY = true;
-        hideFirebaseStatusBanner();
-        attachMemoListener();
-      } else {
-        FIREBASE_READY = false;
-      }
-    }, function (err) {
-      console.error('[firebase] auth state error', err);
-      showToast('Firebase 인증 상태 오류 — 오프라인 모드로 전환합니다.', 'error');
-      FIREBASE_READY = false;
-      showFirebaseStatusBanner();
-    });
-
-    fb.signInAnonymously(FB_AUTH).catch(function (err) {
-      console.error('[firebase] anonymous sign-in failed', err);
-      showToast('Firebase 익명 로그인에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
-      FIREBASE_READY = false;
-      showFirebaseStatusBanner();
-    });
+    const res = await fetch(CLOUD_MEMO_API);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && Array.isArray(data.memos)) {
+      MEMOS = data.memos.map(function (m) {
+        return {
+          id: m.id || ('memo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4)),
+          author: m.author || '익명 동행자',
+          title: m.title || '',
+          content: m.content || '',
+          tags: normalizeTags(m.tags),
+          createdAt: m.createdAt || new Date().toISOString(),
+          updatedAt: m.updatedAt || null
+        };
+      });
+      cacheMemosLocally();
+      renderMemoList();
+      buildMemoFilter();
+      if (statusText) statusText.textContent = '실시간 클라우드 공유 연결됨 (' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' 동기화)';
+      if (statusDot) statusDot.textContent = '🟢';
+    }
   } catch (err) {
-    console.error('[firebase] init error', err);
-    showToast('Firebase 초기화 오류 — 오프라인 모드로 전환합니다.', 'error');
-    FIREBASE_READY = false;
-    showFirebaseStatusBanner();
+    console.warn('[memo] cloud fetch error:', err);
+    if (statusText) statusText.textContent = '로컬 캐시 모드 (오프라인 / 연결 대기)';
+    if (statusDot) statusDot.textContent = '🟡';
   }
 }
 
-function attachMemoListener() {
-  if (!FB_MEMOS_REF || !window._firebase) return;
-  const fb = window._firebase;
-  if (FB_UNSUBSCRIBE) { FB_UNSUBSCRIBE(); FB_UNSUBSCRIBE = null; }
-
-  FB_UNSUBSCRIBE = fb.onValue(FB_MEMOS_REF, function (snapshot) {
-    const val = snapshot.val();
-    const arr = [];
-    if (val) {
-      Object.keys(val).forEach(function (k) {
-        const item = Object.assign({ id: k }, val[k]);
-        item.tags = normalizeTags(item.tags);
-        arr.push(item);
-      });
-    }
-    arr.sort(function (a, b) {
-      return String(b.createdAt).localeCompare(String(a.createdAt));
+async function syncMemosToCloud() {
+  const statusText = document.getElementById('memoSyncText');
+  const statusDot = document.getElementById('memoSyncDot');
+  if (statusText) statusText.textContent = '클라우드 저장 중...';
+  if (statusDot) statusDot.textContent = '🔄';
+  try {
+    const res = await fetch(CLOUD_MEMO_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memos: MEMOS })
     });
-    MEMOS = arr;
-    cacheMemosLocally();
-    renderMemoList();
-    buildMemoFilter();
-  }, function (err) {
-    console.error('[firebase] onValue error', err);
-    showToast('Firebase 데이터 동기화에 실패했습니다. 오프라인 모드로 전환합니다.', 'error');
-    FIREBASE_READY = false;
-    showFirebaseStatusBanner();
-    loadMemosFromCache();
-    renderMemoList();
-    buildMemoFilter();
-  });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (statusText) statusText.textContent = '실시간 클라우드 공유 완료 (' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' 저장됨)';
+    if (statusDot) statusDot.textContent = '🟢';
+    return true;
+  } catch (err) {
+    console.error('[memo] cloud sync error:', err);
+    if (statusText) statusText.textContent = '클라우드 동기화 실패 (로컬에만 보관됨)';
+    if (statusDot) statusDot.textContent = '⚠️';
+    return false;
+  }
 }
 
 function normalizeTags(tags) {
@@ -899,15 +828,6 @@ function resetData() {
 }
 
 /* ---- Toast notification ---- */
-function showFirebaseStatusBanner() {
-  const banner = document.getElementById('firebaseStatusBanner');
-  if (banner) banner.style.display = '';
-}
-
-function hideFirebaseStatusBanner() {
-  const banner = document.getElementById('firebaseStatusBanner');
-  if (banner) banner.style.display = 'none';
-}
 
 function showToast(msg, type) {
   const toast = document.createElement('div');
@@ -1254,20 +1174,34 @@ function initMemoPad(d) {
 
   loadMemosFromCache();
 
-  if (!MEMOS || MEMOS.length === 0) {
-    MEMOS = (d.sampleMemos || []).map(function (m) {
-      return { id: m.id, title: m.title, content: m.content, tags: m.tags.slice(), createdAt: m.createdAt };
-    });
-    cacheMemosLocally();
-  }
-
   renderMemoForm();
   renderMemoList();
   buildMemoFilter();
   bindExportImport();
 
-  // Firebase Realtime Database 동기화 시작 (설정이 유효할 때만)
-  initFirebase();
+  const refreshBtn = document.getElementById('refreshMemosBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      fetchMemosFromCloud(false).then(function () {
+        showToast('최신 메모를 클라우드에서 불러왔습니다.', 'success');
+      });
+    });
+  }
+
+  // 초기 클라우드 동기화
+  fetchMemosFromCloud(true);
+
+  // 브라우저 탭 활성화 시 자동 새로고침
+  window.addEventListener('focus', function () {
+    fetchMemosFromCloud(true);
+  });
+
+  // 30초마다 백그라운드 자동 동기화
+  if (!CLOUD_SYNC_TIMER) {
+    CLOUD_SYNC_TIMER = setInterval(function () {
+      fetchMemosFromCloud(true);
+    }, 30000);
+  }
 }
 
 function renderMemoForm() {
@@ -1275,21 +1209,29 @@ function renderMemoForm() {
   if (!formWrap) return;
   const isEdit = !!MEMO_EDIT_ID;
   const memo = isEdit ? MEMOS.find(function (m) { return m.id === MEMO_EDIT_ID; }) : null;
+  const defaultAuthor = localStorage.getItem('euTrip2027_lastAuthor') || '홍성윤';
+
   let html = '<div class="memo-form">';
-  html += '<div class="memo-form-row">';
-  html += '<label class="memo-form-label" for="memoTitle">제목</label>';
-  html += '<input type="text" id="memoTitle" class="memo-input" placeholder="예: 비엔나 맛집 후보" value="' + (isEdit ? escapeHtml(memo.title) : '') + '">';
+  html += '<div class="memo-form-row" style="display:flex; gap:12px; flex-wrap:wrap;">';
+  html += '<div style="flex:1 1 180px;">';
+  html += '<label class="memo-form-label" for="memoAuthor">작성자</label>';
+  html += '<input type="text" id="memoAuthor" class="memo-input" placeholder="예: 성윤, 지원, 영우" value="' + (isEdit ? escapeHtml(memo.author || '') : escapeHtml(defaultAuthor)) + '">';
+  html += '</div>';
+  html += '<div style="flex:2 1 260px;">';
+  html += '<label class="memo-form-label" for="memoTitle">제목 (선택)</label>';
+  html += '<input type="text" id="memoTitle" class="memo-input" placeholder="예: 비엔나 맛집 후보 / 렌트카 팁" value="' + (isEdit ? escapeHtml(memo.title || '') : '') + '">';
+  html += '</div>';
   html += '</div>';
   html += '<div class="memo-form-row">';
   html += '<label class="memo-form-label" for="memoContent">내용</label>';
-  html += '<textarea id="memoContent" class="memo-textarea" placeholder="기억해야 할 일정, 팁, 링크 등을 자유롭게 적어주세요..." rows="3">' + (isEdit ? escapeHtml(memo.content) : '') + '</textarea>';
+  html += '<textarea id="memoContent" class="memo-textarea" placeholder="일정 아이디어, 가고 싶은 장소, 챙겨야 할 물품 등을 자유롭게 적어주세요..." rows="3">' + (isEdit ? escapeHtml(memo.content || '') : '') + '</textarea>';
   html += '</div>';
   html += '<div class="memo-form-row">';
-  html += '<label class="memo-form-label" for="memoTags">태그</label>';
-  html += '<input type="text" id="memoTags" class="memo-input" placeholder="쉼표로 구분, 예: 비엔나, 맛집, 체크리스트" value="' + (isEdit ? escapeHtml(memo.tags.join(', ')) : '') + '">';
+  html += '<label class="memo-form-label" for="memoTags">태그 (선택)</label>';
+  html += '<input type="text" id="memoTags" class="memo-input" placeholder="쉼표로 구분, 예: 맛집, 체크리스트, 쇼핑" value="' + (isEdit ? escapeHtml((memo.tags || []).join(', ')) : '') + '">';
   html += '</div>';
   html += '<div class="memo-form-actions">';
-  html += '<button class="edit-btn edit-btn-primary" id="memoSubmitBtn" type="button">' + (isEdit ? '💾 수정 완료' : '➕ 메모 추가') + '</button>';
+  html += '<button class="edit-btn edit-btn-primary" id="memoSubmitBtn" type="button">' + (isEdit ? '💾 메모 수정 완료' : '➕ 공유 메모 등록') + '</button>';
   if (isEdit) {
     html += '<button class="edit-btn edit-btn-reset" id="memoCancelBtn" type="button">취소</button>';
   }
@@ -1302,54 +1244,54 @@ function renderMemoForm() {
   }
 }
 
-function handleMemoSubmit() {
+async function handleMemoSubmit() {
+  const authorInput = document.getElementById('memoAuthor');
+  const author = (authorInput ? authorInput.value.trim() : '') || '익명 동행자';
   const title = document.getElementById('memoTitle').value.trim();
   const content = document.getElementById('memoContent').value.trim();
   const tagsRaw = document.getElementById('memoTags').value;
   const tags = tagsRaw.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
 
   if (!title && !content) {
-    showToast('제목 또는 내용을 입력해 주세요.', 'error');
+    showToast('메모 내용이나 제목을 입력해 주세요.', 'error');
     return;
   }
+
+  localStorage.setItem('euTrip2027_lastAuthor', author);
 
   if (MEMO_EDIT_ID) {
     const idx = MEMOS.findIndex(function (m) { return m.id === MEMO_EDIT_ID; });
     if (idx !== -1) {
-      const updates = { title: title, content: content, tags: tags, updatedAt: new Date().toISOString() };
-      if (FIREBASE_READY && FB_DB && window._firebase) {
-        const fb = window._firebase;
-        fb.update(fb.ref(FB_DB, 'memos/' + MEMO_EDIT_ID), updates).catch(function (err) {
-          console.error('[firebase] update failed', err);
-          showToast('Firebase 저장 실패 — localStorage에 보관합니다.', 'error');
-          FIREBASE_READY = false;
-        });
-      }
+      const updates = {
+        author: author,
+        title: title,
+        content: content,
+        tags: tags,
+        updatedAt: new Date().toISOString()
+      };
       Object.assign(MEMOS[idx], updates);
     }
     MEMO_EDIT_ID = null;
-    showToast('메모가 수정되었습니다.', 'success');
+    showToast('메모가 수정되어 클라우드에 공유되었습니다.', 'success');
   } else {
     const newMemo = {
+      id: 'memo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      author: author,
       title: title,
       content: content,
       tags: tags,
       createdAt: new Date().toISOString()
     };
-    if (FIREBASE_READY && FB_MEMOS_REF && window._firebase) {
-      const fb = window._firebase;
-      const newRef = fb.push(FB_MEMOS_REF, newMemo);
-      newMemo.id = newRef.key;
-    } else {
-      newMemo.id = 'memo-' + Date.now();
-    }
     MEMOS.unshift(newMemo);
-    showToast('메모가 추가되었습니다.', 'success');
+    showToast('새 메모가 모든 접속자에게 공유되었습니다! 💬', 'success');
   }
+
   cacheMemosLocally();
   renderMemoForm();
   renderMemoList();
   buildMemoFilter();
+
+  await syncMemosToCloud();
 }
 
 function cancelMemoEdit() {
@@ -1360,20 +1302,12 @@ function cancelMemoEdit() {
 function editMemo(id) {
   MEMO_EDIT_ID = id;
   renderMemoForm();
-  const input = document.getElementById('memoTitle');
+  const input = document.getElementById('memoContent') || document.getElementById('memoTitle');
   if (input) input.focus();
 }
 
-function deleteMemo(id) {
-  if (!confirm('이 메모를 삭제할까요?')) return;
-  if (FIREBASE_READY && FB_DB && window._firebase) {
-    const fb = window._firebase;
-    fb.remove(fb.ref(FB_DB, 'memos/' + id)).catch(function (err) {
-      console.error('[firebase] remove failed', err);
-      showToast('Firebase 삭제 실패 — localStorage에서만 삭제합니다.', 'error');
-      FIREBASE_READY = false;
-    });
-  }
+async function deleteMemo(id) {
+  if (!confirm('이 메모를 삭제할까요? (모든 접속자의 목록에서도 삭제됩니다)')) return;
   MEMOS = MEMOS.filter(function (m) { return m.id !== id; });
   if (MEMO_EDIT_ID === id) {
     MEMO_EDIT_ID = null;
@@ -1383,12 +1317,19 @@ function deleteMemo(id) {
   renderMemoList();
   buildMemoFilter();
   showToast('메모가 삭제되었습니다.', 'info');
+  await syncMemosToCloud();
 }
 
 function formatDate(iso) {
   try {
     const d = new Date(iso);
-    return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+    if (isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return y + '.' + m + '.' + day + ' ' + h + ':' + min;
   } catch (e) { return ''; }
 }
 
@@ -1396,19 +1337,24 @@ function renderMemoList() {
   const container = document.getElementById('memoSection');
   if (!container) return;
   const activeTag = ACTIVE_FILTERS.memo;
-  const items = activeTag ? MEMOS.filter(function (m) { return m.tags.indexOf(activeTag) !== -1; }) : MEMOS;
+  const items = activeTag ? MEMOS.filter(function (m) { return m.tags && m.tags.indexOf(activeTag) !== -1; }) : MEMOS;
   if (items.length === 0) {
-    container.innerHTML = '<p class="memo-empty">메모가 없습니다. 첫 메모를 남겨보세요.</p>';
+    container.innerHTML = '<p class="memo-empty">등록된 공유 메모가 없습니다. 첫 메모나 의견을 남겨보세요!</p>';
     return;
   }
   container.innerHTML = items.map(function (m) {
-    const tags = m.tags.map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+    const tags = (m.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+    const authorBadge = '<span style="display:inline-flex; align-items:center; gap:4px; font-weight:700; color:var(--ink); font-size:13px; background:var(--paper-3); padding:2px 8px; border-radius:12px;">👤 ' + escapeHtml(m.author || '익명 동행자') + '</span>';
+    const dateText = '<span style="font-size:11.5px; color:var(--muted);">' + formatDate(m.createdAt) + (m.updatedAt ? ' (수정됨)' : '') + '</span>';
+    
     return '<div class="memo-card" data-id="' + m.id + '">' +
-      '<h4>' + escapeHtml(m.title) + '</h4>' +
-      '<p>' + escapeHtml(m.content) + '</p>' +
-      '<div class="tags">' + tags + '</div>' +
-      '<div class="memo-meta">' + formatDate(m.createdAt) + '</div>' +
-      '<div class="memo-actions">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--line); padding-bottom:6px;">' +
+      authorBadge + dateText +
+      '</div>' +
+      (m.title ? '<h4 style="margin:0 0 6px; font-size:15.5px; font-weight:600; color:var(--ink);">' + escapeHtml(m.title) + '</h4>' : '') +
+      '<p style="margin:0 0 10px; font-size:14.5px; line-height:1.7; white-space:pre-wrap;">' + escapeHtml(m.content) + '</p>' +
+      (tags ? '<div class="tags" style="margin-bottom:10px;">' + tags + '</div>' : '') +
+      '<div class="memo-actions" style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); display:flex; justify-content:flex-end;">' +
       '<button class="edit-btn memo-edit-btn" type="button" data-id="' + m.id + '">✏️ 수정</button>' +
       '<button class="edit-btn edit-btn-reset memo-delete-btn" type="button" data-id="' + m.id + '">🗑️ 삭제</button>' +
       '</div>' +
@@ -1458,38 +1404,24 @@ function importMemos(file) {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('invalid format');
 
-      if (FIREBASE_READY && FB_MEMOS_REF && window._firebase) {
-        const fb = window._firebase;
-        imported.forEach(function (m) {
-          const memo = {
-            title: m.title || '',
-            content: m.content || '',
-            tags: normalizeTags(m.tags),
-            createdAt: m.createdAt || new Date().toISOString()
-          };
-          fb.push(FB_MEMOS_REF, memo);
+      imported.forEach(function (m) {
+        MEMOS.unshift({
+          id: 'memo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+          author: m.author || '가져온 메모',
+          title: m.title || '',
+          content: m.content || '',
+          tags: normalizeTags(m.tags),
+          createdAt: m.createdAt || new Date().toISOString()
         });
-        showToast('메모를 Firebase에 가져왔습니다.', 'success');
-      } else {
-        imported.forEach(function (m) {
-          if (!MEMOS.find(function (existing) { return existing.id === m.id; })) {
-            MEMOS.push(m);
-          }
-        });
-        MEMOS.sort(function (a, b) {
-          return String(b.createdAt).localeCompare(String(a.createdAt));
-        });
-        showToast('메모를 가져왔습니다.', 'success');
-      }
-
-      MEMO_EDIT_ID = null;
+      });
       cacheMemosLocally();
       renderMemoForm();
       renderMemoList();
       buildMemoFilter();
+      syncMemosToCloud();
+      showToast('메모를 가져와 클라우드에 공유했습니다.', 'success');
     } catch (err) {
-      console.error('[memo] import 실패:', err);
-      showToast('메모 가져오기 실패 — 올바른 JSON 파일인지 확인하세요.', 'error');
+      showToast('메모 파일 형식이 올바르지 않습니다.', 'error');
     }
   };
   reader.readAsText(file);

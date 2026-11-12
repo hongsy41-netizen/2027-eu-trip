@@ -180,7 +180,7 @@
 <div class="card map-card">
 <div id="routeMap"></div>
 <div class="legend">
-<b>범례</b> — 번호 = 정차 순서(①~⑧), <b>실선</b> = 실제 도로 주행 경로, 점선 = 직선 연결(경로 로드 실패 시). 마커에 마우스를 올리면 도시명, 누르면 숙박 일수·다음 구간이 표시됩니다. <span class="dim">(OpenStreetMap · CARTO · OSRM)</span><span id="mapStatus" class="map-status">경로 불러오는 중…</span>
+<b>범례</b> — 번호 = 정차 순서(①~⑧), <b>실선</b> = 실제 도로 주행 경로, 점선 = 직선 연결(경로 로드 실패 시). 마커에 마우스를 올리면 도시명, 누르면 숙박 일수·다음 구간이 표시됩니다. <span class="dim">(Esri World Street Map · OSRM)</span><span id="mapStatus" class="map-status">경로 불러오는 중…</span>
 </div>
 </div>
 
@@ -190,25 +190,24 @@
   // 순서: 출발(부다페스트공항) → 비엔나 → 프라하 → 크룸로프 → 고사우 → 돌로미티 서부 → 돌로미티 동부 → 그라츠 → 복귀(부다페스트관광)
   const stops = [
     { name:"부다페스트 (출발·귀국)", sub:"BUD 공항 · 도착 7/18 → 출발 8/6 · → 비엔나 3h 1min", n:"✈", lat:47.4298, lng:19.2611 },
-    { name:"비엔나", sub:"7/18–20 · 3박 · → 프라하 3h 49min", n:"1", lat:48.2082, lng:16.3738 },
-    { name:"프라하", sub:"7/21–22 · 2박 · → 크룸로프 1h 56min", n:"2", lat:50.0755, lng:14.4378 },
-    { name:"체스키크룸로프", sub:"7/23 · 1박 · → 고사우 2h 51min", n:"3", lat:48.8107, lng:14.3176 },
-    { name:"고사우", sub:"7/24–26 · 3박 · Hallstatt·잘츠부르크 순회 · → 서부 4h 39min", n:"4", lat:47.5833, lng:13.5333 },
-    { name:"돌로미티 서부", sub:"7/27–29 · 3박 · Ponte Nova/Val d'Ega · → 동부 2h 41min", n:"5", lat:46.4500, lng:11.5500 },
-    { name:"돌로미티 동부", sub:"7/30–8/1 · 3박 · San Vito di Cadore · → 그라츠 4h 43min", n:"6", lat:46.4550, lng:12.2070 },
-    { name:"그라츠", sub:"8/2 · 1박 · → 부다페스트 3h 50min", n:"7", lat:47.0707, lng:15.4395 },
-    { name:"부다페스트 (관광)", sub:"8/3–5 · 3박 · 렌트 반납 → 공항", n:"8", lat:47.4979, lng:19.0402 }
+    { name:"비엔나", sub:"7/18–21 · 3박 · → 프라하 3h 49min", n:"1", lat:48.2082, lng:16.3738 },
+    { name:"프라하", sub:"7/21–23 · 2박 · → 크룸로프 1h 56min", n:"2", lat:50.0755, lng:14.4378 },
+    { name:"체스키크룸로프", sub:"7/23–24 · 1박 · → 고사우 2h 51min", n:"3", lat:48.8107, lng:14.3176 },
+    { name:"고사우", sub:"7/24–27 · 3박 · Hallstatt·잘츠부르크 순회 · → 서부 4h 39min", n:"4", lat:47.5833, lng:13.5333 },
+    { name:"돌로미티 서부", sub:"7/27–30 · 3박 · Ponte Nova/Val d'Ega · → 동부 2h 41min", n:"5", lat:46.4500, lng:11.5500 },
+    { name:"돌로미티 동부", sub:"7/30–8/2 · 3박 · San Vito di Cadore · → 그라츠 4h 43min", n:"6", lat:46.4550, lng:12.2070 },
+    { name:"그라츠", sub:"8/2–3 · 1박 · → 부다페스트 3h 50min", n:"7", lat:47.0707, lng:15.4395 },
+    { name:"부다페스트 (관광)", sub:"8/3–6 · 3박 · 렌트 반납 → 공항", n:"8", lat:47.4979, lng:19.0402 }
   ];
 
   const ACCENT = '#A8492B';
   const map = L.map('routeMap', { scrollWheelZoom:false, zoomSnap:0.25, zoomControl:true });
   map.setView([47.6, 15.2], 6);
 
-  // 실제 지도 타일 (CARTO Voyager — 도로·지형이 읽기 쉬운 스타일)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  // 실제 지도 타일 (Esri World Street Map — API 키 없이 선명한 도로·지형)
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
-    subdomains: 'abcd',
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom'
   }).addTo(map);
   L.control.scale({ imperial:false, position:'bottomleft' }).addTo(map);
 

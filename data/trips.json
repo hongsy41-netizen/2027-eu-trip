@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "2027 유럽 여행 — 항공 & 지상 동선",
-    "subtitle": "부다페스트(BUD) in/out · 베이징 경유 · 렌트카 · 시계방향 원형루프",
+    "subtitle": "부다페스트(BUD) in/out · 상하이 경유 · 렌트카 · 시계방향 원형루프",
     "version": "v1",
     "createdDate": "2026.08",
     "tripDates": "2027.07.17 - 08.07",
@@ -18,70 +18,73 @@
     "distanceNote": "참고값 (지도 기반 실측 권장)"
   },
   "flights": {
-    "airline": "중국국제항공 (Air China, CA)",
+    "airline": "중국동방항공 (China Eastern, MU) · 일부 구간 상하이항공(FM) 운항",
     "cabin": "일반석",
     "outbound": [
       {
         "leg": 1,
         "date": "7/17 (토)",
-        "route": "GMP → PEK",
-        "flight": "CA138",
-        "aircraft": "보잉 737-300",
-        "depart": "14:25",
-        "arrive": "15:45",
-        "duration": "2h20m"
+        "route": "ICN → PVG",
+        "flight": "MU5052",
+        "aircraft": "에어버스 A330",
+        "depart": "08:55",
+        "arrive": "10:00",
+        "duration": "2h05m",
+        "departureTerminal": "ICN T1"
       },
       {
         "leg": "transit",
-        "location": "베이징",
-        "duration": "11h05m",
-        "note": "수하물 수취/재수속 불필요 · 한국 국적 무비자 경유"
+        "location": "상하이 푸동",
+        "duration": "15h50m",
+        "note": "수하물 수취/재수속 불필요 · 무비자 환승"
       },
       {
         "leg": 2,
         "date": "7/18 (일)",
-        "route": "PEK → BUD",
-        "flight": "CA719",
+        "route": "PVG → BUD",
+        "flight": "MU601",
         "aircraft": "보잉 787-9",
-        "depart": "02:50",
-        "arrive": "07:00 (+1)",
-        "duration": "10h10m",
-        "arrivalTerminal": "BUD T2B"
+        "depart": "01:50",
+        "arrive": "08:05",
+        "duration": "12h15m",
+        "arrivalTerminal": "BUD T2B",
+        "operatedBy": "상하이항공 FM869"
       }
     ],
-    "outboundTotal": "23h35m",
+    "outboundTotal": "30h10m",
     "return": [
       {
         "leg": 1,
         "date": "8/6 (금)",
-        "route": "BUD → PEK",
-        "flight": "CA720",
+        "route": "BUD → PVG",
+        "flight": "MU602",
         "aircraft": "보잉 787-9",
-        "depart": "13:00",
-        "arrive": "04:10 (+1)",
-        "duration": "9h10m",
-        "departureTerminal": "BUD T2B"
+        "depart": "12:30",
+        "arrive": "05:35 (+1)",
+        "duration": "11h05m",
+        "departureTerminal": "BUD T2A",
+        "operatedBy": "상하이항공 FM870"
       },
       {
         "leg": "transit",
-        "location": "베이징",
-        "duration": "5h50m",
+        "location": "상하이 푸동",
+        "duration": "3h35m",
         "note": "수하물 수취/재수속 불필요"
       },
       {
         "leg": 2,
         "date": "8/7 (토)",
-        "route": "PEK → GMP",
-        "flight": "CA137",
-        "aircraft": "보잉 737-300",
-        "depart": "10:00",
-        "arrive": "13:05",
-        "duration": "2h05m",
-        "arrivalTerminal": "GMP T1"
+        "route": "PVG → ICN",
+        "flight": "MU5041",
+        "aircraft": "에어버스 A330",
+        "depart": "09:10",
+        "arrive": "11:55",
+        "duration": "1h45m",
+        "arrivalTerminal": "ICN T1"
       }
     ],
-    "returnTotal": "17h05m",
-    "transitWarning": "베이징 환승 11h05m — 시내 나들이 가능. 한국 국적은 무비자 경유 대상이라 가능하나, 수하물은 체크쓰루로 부다페스트까지 걸고, 여권 지참 + 입국시 임시입국허가 카드 작성 필요. 환승 대기로 공항에만 있어도 무방."
+    "returnTotal": "16h25m",
+    "transitWarning": "상하이 환승 15h50m — 수하물 체크쓰루·재수속 불필요, 무비자 환승. 시내 나들이 또는 공항 근처 환승 호텔 휴식 권장."
   },
   "phases": [
     {
@@ -204,7 +207,7 @@
       "to": "비엔나",
       "km": "240",
       "nights": "비엔나 1박",
-      "note": "✈ 07:00 BUD 도착 → 렌트 픽업 → 비엔나 (~2.5h) · 밤샘 비행 후 무리 없는 이동",
+      "note": "✈ 08:05 BUD 도착(MU601) → 렌트 픽업 → 비엔나 (~2.5h) · 상하이 15h50m 환승 + 새벽 비행 후 무리 없는 이동",
       "country": "AT"
     },
     {
@@ -598,9 +601,9 @@
       "content": "7-8월 유럽 피크시즌. 할슈타트·돌로미티는 2~3달 전 풀매진. 지금부터 예약 가능한 곳부터 순차 확보 권장."
     },
     {
-      "title": "베이징 환승",
+      "title": "상하이 환승",
       "icon": "✈️",
-      "content": "환승 11h05m — 시내 나들이 가능(무비자 경유). 수하물은 체크쓰루로 BUD까지 직행. 여권 지참 + 임시입국허가 카드 작성."
+      "content": "환승 15h50m(7/17 10:00→7/18 01:50) — 수하물은 체크쓰루로 BUD까지 직행, 재수속·환승 비자 불필요. 무비자 환승으로 시내 출입 가능(여권 지참). 서율이·어르신은 공항 근처 호텔 휴식 권장."
     },
     {
       "title": "산악 주행",
@@ -615,9 +618,9 @@
         "id": "flights",
         "name": "항공권 (5인 왕복)",
         "icon": "✈️",
-        "amount": 5000000,
-        "confirmed": false,
-        "note": "중국국제항공 CA138/719/720/137 · 추정값, 실제 발권가 입력"
+        "amount": 5817000,
+        "confirmed": true,
+        "note": "중국동방항공 MU5052/601/602/5041 · 트립닷컴 PNR QY4HLH · 발권 완료"
       },
       {
         "id": "rental",
@@ -680,7 +683,7 @@
   "warnings": [
     {
       "type": "warn",
-      "text": "1일차 피로 — 베이징 환승 + 밤샘 비행 직후 07:00 착륙 → 바로 2.5h 운전. 비엔나 3박으로 첫날은 가벼운 일정 권장."
+      "text": "1일차 피로 — 상하이 15h50m 환승 + 새벽 비행 직후 08:05 착륙 → 바로 3h 운전. 비엔나 3박으로 첫날은 가벼운 일정 권장."
     },
     {
       "type": "warn",
